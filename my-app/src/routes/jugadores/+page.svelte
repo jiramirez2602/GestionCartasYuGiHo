@@ -1,4 +1,10 @@
 <script>
+  //TODO:Validar usuarios nuevo
+  //TODO: agregar campos correo y id de juego
+  //TODO: persistir datos en json
+  //TODO: conectar a firebase
+  
+
   let menux = "Jugadores";
   /***********************************************************************/
   import { v4 } from "uuid";
@@ -309,10 +315,10 @@
                       <div class="row">
                         <div class="card">
                           <div class="card-body">
-                            <h2>No hay usuarios cargados</h2>
+                            <h2>No hay jugadores en el sistema</h2>
 
                             <img
-                              src="/img/no_encontrado_png.png"
+                              src="../../src/assets/img/no_encontrado.png"
                               alt=""
                               class="img-fluid mx-auto"
                               width="200px"
