@@ -1,7 +1,7 @@
 <script>
 
   let menu= "Records"
-  let formato = ["06-2001"]
+  let formato = ["06-2001", "07-2000"]
   let pagina = 0;
 </script>
 
