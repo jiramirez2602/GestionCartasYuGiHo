@@ -1,6 +1,5 @@
 <!-- <a href="/about">About my site</a> -->
 <script>
-  //TODO:Validar usuarios realmente
 
   import Notiflix from "notiflix";
 
@@ -22,7 +21,7 @@
         "Bienvenido, has iniciado sesión correctamente!"
       );
       setTimeout(() => {
-        window.location.href = "/cartas";
+        window.location.href = "/jugadores";
       }, 1200);
     }
   }

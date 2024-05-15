@@ -1,7 +1,7 @@
 <script>
-  //TODO:Validar usuarios nuevo
+  //Libreria de notificaciones
+  import Notiflix from "notiflix";
 
-  import Notiflix from "notiflix"; //Libreria de notificaciones
   //Importaciones para db
   import { db } from "../firebase";
   import {
@@ -12,8 +12,21 @@
     doc,
     updateDoc,
   } from "firebase/firestore";
+
   import { onDestroy } from "svelte";
-  let users = []; //Variable vacia donde se guardan los usuarios
+
+  //Variable vacia donde se guardan los usuarios
+  let users = [];
+
+  //Variable para buscar usuarios
+  let search = "";
+
+  $: visibleUsers = search
+    ? users.filter((user) => {
+        return user.username.match(`${search}.*`);
+      })
+    : users;
+
   let menux = "Jugadores"; //nombre del menú
 
   //Actualizaciones de data en timpo real
@@ -43,6 +56,9 @@
     password: "",
   };
 
+  //Variable para guardar nombre de usuario a modificar aux
+  let usernameToUpdate = "";
+
   //Funcion para crear usuario
   const createUser = async () => {
     try {
@@ -53,20 +69,32 @@
       };
       //Validar nombre de usuario existente
       // Expresión regular que verifica letras minúsculas y dígitos (al menos 5 caracteres, maximo 10)
-      const regexUsers = /^[a-z0-9]{5,}$/; 
-      if (users.find(usuario => usuario.username === newUser.username)) {
+      const regexUsers = /^[a-z0-9]{5,}$/;
+      if (users.find((usuario) => usuario.username === newUser.username)) {
         throw new Error("Username ya existe");
-      } else if (users.find(usuario => usuario.idKonami === newUser.idKonami)) {
+      } else if (
+        users.find((usuario) => usuario.idKonami === newUser.idKonami)
+      ) {
         throw new Error("ID Konami ya existe");
-      } else if (usuario.password == "" ||  usuario.username == "" || usuario.idKonami == "") {
+      } else if (
+        usuario.password == "" ||
+        usuario.username == "" ||
+        usuario.idKonami == ""
+      ) {
         throw new Error("Debe llenar todos los campos");
       } else if (usuario.username.length < 5 || usuario.username.length > 10) {
-        throw new Error("Username debe tener al menos 5 caracteres y maximo 10");
-      } else if (!regexUsers.test(usuario.username)){
-        throw new Error("Username solo puede contener letras minúsculas y dígitos");
+        throw new Error(
+          "Username debe tener al menos 5 caracteres y maximo 10"
+        );
+      } else if (!regexUsers.test(usuario.username)) {
+        throw new Error(
+          "Username solo puede contener letras minúsculas y dígitos"
+        );
       } else if (usuario.password.length < 5 || usuario.password.length > 15) {
-        throw new Error("Contraseña debe tener al menos 5 caracteres y maximo 10");
-      } 
+        throw new Error(
+          "Contraseña debe tener al menos 5 caracteres y maximo 10"
+        );
+      }
 
       //Enviar a DB si no hay errores
       await addDoc(collection(db, "users"), newUser); //Conectar a la db y crear data
@@ -83,18 +111,20 @@
   const updateDataToUpdateUser = (usuarioEdited) => {
     usuario = usuarioEdited;
     editStatus = true;
+    usernameToUpdate = usuarioEdited.username;
   };
 
   //Actualizar datos en db
   const updateUser = () => {
     try {
-      let updatedProduct = {
+      let updatedUser = {
         idKonami: usuario.idKonami,
         username: usuario.username,
         password: usuario.password,
       };
-      updateDoc(doc(db, "users", usuario.id), updatedProduct); //Conectar a la db y enviar data
+      updateDoc(doc(db, "users", usuario.id), updatedUser); //Conectar a la db y enviar data
       Notiflix.Notify.info("Usuario modificado con exito!");
+      users = [];
     } catch (error) {
       Notiflix.Notify.failure("Usuario no pudo ser modificado: " + error);
     }
@@ -295,7 +325,12 @@
               <div class="row">
                 <div class="col-md-6">
                   <h1 class="h3 mb-0 text-gray-800 mb-1">{menux}</h1>
-
+                  <input
+                    type=""
+                    bind:value={search}
+                    class="form-control"
+                    placeholder="Buscar"
+                  />
                   <div class="card mt-2">
                     <div class="card-body">
                       <form on:submit|preventDefault={onSubmitHadler}>
@@ -357,7 +392,7 @@
                       </div>
                     </div>
                   {/if}
-                  {#each users as user}
+                  {#each visibleUsers as user}
                     <div class="card mt-2">
                       <div class="row">
                         <div class="col-md-8 m-3">
