@@ -1,28 +1,56 @@
 <!-- <a href="/about">About my site</a> -->
 <script>
-
   import Notiflix from "notiflix";
 
   let mensaje = "Por favor introduce tu usuario y contraseña!";
   let username = "";
   let password = "";
 
+  import { db } from "../firebase";
+  import { collection, onSnapshot } from "firebase/firestore";
+  import { onDestroy } from "svelte";
+
+  //Variable vacia donde se guardan los usuarios
+  let users = [];
+
+  //Actualizaciones de data en timpo real
+  const onsub = onSnapshot(
+    collection(db, "users"),
+    (querySnapshot) => {
+      users = querySnapshot.docs.map((docs) => {
+        return { ...docs.data(), id: docs.id };
+      });
+      console.log(users);
+    },
+    (err) => {
+      console.log(err);
+    }
+  );
+
+  //Dejar de solicitar actualización al salir de ventana
+  onDestroy(onsub);
+
   function login() {
     // Aquí puedes agregar la lógica para el inicio de sesión
-    console.log("Username:", username);
-    console.log("Password:", password);
-    if (username === "" || password === "" || username !== "user" || password !== "123") {
-      Notiflix.Notify.failure(
-        "Usuario o contraseña invalido, intente de nuevo"
-      );
-    }
-    if (username === "user" && password === "123") {
-      Notiflix.Notify.success(
-        "Bienvenido, has iniciado sesión correctamente!"
-      );
+    if (username === "admin" && password === "admin") {
+      Notiflix.Notify.success("Bienvenido, has iniciado sesión como admin!");
       setTimeout(() => {
         window.location.href = "/jugadores";
       }, 1200);
+    } 
+
+    let comparador = users.find((usuario) => usuario.username === username);
+    if (comparador && comparador.password == password) {
+      Notiflix.Notify.success("Bienvenido, has iniciado sesión como jugador!");
+      //TODO: //Redireccionar a la página de jugadores
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1200);
+    } 
+
+    if (!(comparador && comparador.password == password) && !(username === "admin" && password === "admin")){
+      Notiflix.Notify.failure("Usuario o contraseña inválida!");
+      
     }
   }
 </script>
