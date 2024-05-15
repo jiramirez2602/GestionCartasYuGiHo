@@ -17,7 +17,7 @@
       >
         <div class="sidebar-brand-icon mt-4">
           <img
-            src="../../src/assets/img/isotipo.png"
+            src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/isotipo.png?alt=media&token=55b51f65-c906-4427-ba2b-39bfea66ada9"
             alt="Descripción de la imagen"
             style="width: 120px;"
           />
@@ -90,7 +90,7 @@
           <ul class="navbar-nav ml-auto ">
             <li class="nav-item mt-2">
               <img
-                src="../../src/assets/img/logotipo.png"
+                src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/logotipo.png?alt=media&token=8e737513-5251-42be-b83f-efaeb59edf79"
                 alt="Navbar Logo"
                 class="img-fluid"
                 width="200px"

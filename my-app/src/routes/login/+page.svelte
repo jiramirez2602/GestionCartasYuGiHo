@@ -43,7 +43,7 @@
           <div class="card-body text-center">
             <div class="mb-md-5 mt-md-4">
               <img
-                src="../src/assets/img/isotipo.png"
+                src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/isotipo.png?alt=media&token=55b51f65-c906-4427-ba2b-39bfea66ada9"
                 class="rounded mx-auto d-block"
                 alt="..."
                 width="180px"

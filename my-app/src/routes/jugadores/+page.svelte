@@ -11,7 +11,6 @@
     deleteDoc,
     doc,
     updateDoc,
-    or,
   } from "firebase/firestore";
   import { onDestroy } from "svelte";
   let users = []; //Variable vacia donde se guardan los usuarios
@@ -54,7 +53,7 @@
       };
       //Validar nombre de usuario existente
       // Expresión regular que verifica letras minúsculas y dígitos (al menos 5 caracteres, maximo 10)
-      const miRegexChars = /^[a-z0-9]{5,}$/; 
+      const regexUsers = /^[a-z0-9]{5,}$/; 
       if (users.find(usuario => usuario.username === newUser.username)) {
         throw new Error("Username ya existe");
       } else if (users.find(usuario => usuario.idKonami === newUser.idKonami)) {
@@ -63,13 +62,11 @@
         throw new Error("Debe llenar todos los campos");
       } else if (usuario.username.length < 5 || usuario.username.length > 10) {
         throw new Error("Username debe tener al menos 5 caracteres y maximo 10");
-      } else if (!miRegexChars.test(usuario.username)){
+      } else if (!regexUsers.test(usuario.username)){
         throw new Error("Username solo puede contener letras minúsculas y dígitos");
-      } else if (usuario.password.length < 5 || usuario.password.length > 10) {
+      } else if (usuario.password.length < 5 || usuario.password.length > 15) {
         throw new Error("Contraseña debe tener al menos 5 caracteres y maximo 10");
-      } else if (!miRegexChars.test(usuario.password)){
-        throw new Error("Password solo puede contener letras minúsculas y dígitos");
-      }
+      } 
 
       //Enviar a DB si no hay errores
       await addDoc(collection(db, "users"), newUser); //Conectar a la db y crear data
@@ -146,7 +143,7 @@
       >
         <div class="sidebar-brand-icon mt-4">
           <img
-            src="../../src/assets/img/isotipo.png"
+            src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/isotipo.png?alt=media&token=55b51f65-c906-4427-ba2b-39bfea66ada9"
             alt="Descripción de la imagen"
             style="width: 120px;"
           />
@@ -224,7 +221,7 @@
           <ul class="navbar-nav ml-auto">
             <li class="nav-item mt-2">
               <img
-                src="../../src/assets/img/logotipo.png"
+                src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/logotipo.png?alt=media&token=8e737513-5251-42be-b83f-efaeb59edf79"
                 alt="Navbar Logo"
                 class="img-fluid"
                 width="200px"
@@ -350,7 +347,7 @@
                             <h2>No hay jugadores en el sistema</h2>
 
                             <img
-                              src="../../src/assets/img/no_encontrado.png"
+                              src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/no_encontrado.png?alt=media&token=8dc8d728-7577-4a8f-a1e5-c7480a381dc4"
                               alt=""
                               class="img-fluid mx-auto"
                               width="200px"
