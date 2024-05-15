@@ -1,7 +1,7 @@
 <script>
 
   let menu= "Records"
-  let formato = ["06-2001", "07-2000"]
+  let formato = [];
   let pagina = 0;
   let fecha = fechaActual();
   
@@ -67,12 +67,13 @@
 
   function nuevoFormato(){
 
-    if (buscarFormato(formato, cambiarMPorY(fecha)) < 0){
+    if (buscarFormato(formato, fecha) < 0){
 
         if (window.confirm("Esta seguro de crear el formato [" + cambiarMPorY(fecha) + "]")){
 
-            formato.push(cambiarMPorY(fecha));
+            formato.push(fecha);
             formato.sort();
+            formato.reverse();
             window.alert("El formato [" + cambiarMPorY(fecha) + "] fue creado con exito");
         }
         else{
@@ -266,7 +267,7 @@
                               <div class="candidate-list-details">
                                 <div class="candidate-list-info">
                                   <div class="candidate-list-title">
-                                    <span class="candidate-list-time order-1">{e}</span>
+                                    <span class="candidate-list-time order-1">{cambiarMPorY(e)}</span>
                                   </div>
                                 </div>
                               </div>
