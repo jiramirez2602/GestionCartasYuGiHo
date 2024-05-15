@@ -1,60 +1,119 @@
 <script>
   //TODO:Validar usuarios nuevo
-  //TODO: agregar campos correo y id de juego
-  //TODO: persistir datos en json
-  //TODO: conectar a firebase
-  
 
-  let menux = "Jugadores";
-  /***********************************************************************/
-  import { v4 } from "uuid";
-  import Notiflix from "notiflix";
+  import Notiflix from "notiflix"; //Libreria de notificaciones
+  //Importaciones para db
+  import { db } from "../firebase";
+  import {
+    addDoc,
+    collection,
+    onSnapshot,
+    deleteDoc,
+    doc,
+    updateDoc,
+    or,
+  } from "firebase/firestore";
+  import { onDestroy } from "svelte";
+  let users = []; //Variable vacia donde se guardan los usuarios
+  let menux = "Jugadores"; //nombre del menú
+
+  //Actualizaciones de data en timpo real
+  const onsub = onSnapshot(
+    collection(db, "users"),
+    (querySnapshot) => {
+      users = querySnapshot.docs.map((docs) => {
+        return { ...docs.data(), id: docs.id };
+      });
+      console.log(users);
+    },
+    (err) => {
+      console.log(err);
+    }
+  );
+
+  //Dejar de solicitar actualización al salir de ventana
+  onDestroy(onsub);
+
+  //Variable para editar y crear usuarios
   let editStatus = false;
-  let users = [
-    {
-      konami_id: "qwe456",
-      username: "Jorge",
-      password: "admin",
-    },
-    {
-      konami_id: "abc123",
-      username: "Jorge",
-      password: "admin",
-    },
-  ];
+
+  //Objeto usuario nuevo
   let usuario = {
-    konami_id: "",
+    idKonami: "",
     username: "",
     password: "",
   };
-  const createUser = () => {
-    const newUser = {
-      konami_id: usuario.konami_id,
-      username: usuario.username,
-      password: usuario.password,
-    };
-    users = users.concat(newUser);
-    limpiarFormulario();
-    Notiflix.Notify.success("Usuario creado con exito!");
+
+  //Funcion para crear usuario
+  const createUser = async () => {
+    try {
+      const newUser = {
+        idKonami: usuario.idKonami,
+        username: usuario.username,
+        password: usuario.password,
+      };
+      //Validar nombre de usuario existente
+      // Expresión regular que verifica letras minúsculas y dígitos (al menos 5 caracteres, maximo 10)
+      const miRegexChars = /^[a-z0-9]{5,}$/; 
+      if (users.find(usuario => usuario.username === newUser.username)) {
+        throw new Error("Username ya existe");
+      } else if (users.find(usuario => usuario.idKonami === newUser.idKonami)) {
+        throw new Error("ID Konami ya existe");
+      } else if (usuario.password == "" ||  usuario.username == "" || usuario.idKonami == "") {
+        throw new Error("Debe llenar todos los campos");
+      } else if (usuario.username.length < 5 || usuario.username.length > 10) {
+        throw new Error("Username debe tener al menos 5 caracteres y maximo 10");
+      } else if (!miRegexChars.test(usuario.username)){
+        throw new Error("Username solo puede contener letras minúsculas y dígitos");
+      } else if (usuario.password.length < 5 || usuario.password.length > 10) {
+        throw new Error("Contraseña debe tener al menos 5 caracteres y maximo 10");
+      } else if (!miRegexChars.test(usuario.password)){
+        throw new Error("Password solo puede contener letras minúsculas y dígitos");
+      }
+
+      //Enviar a DB si no hay errores
+      await addDoc(collection(db, "users"), newUser); //Conectar a la db y crear data
+      limpiarFormulario();
+      Notiflix.Notify.success("Usuario creado con exito!");
+    } catch (e) {
+      Notiflix.Notify.failure("Usuario no pudo ser creado: " + e.message);
+    }
   };
 
+  /*  Funciones para actualizar usuario */
+
+  //Actualizar datos en formulario
   const updateDataToUpdateUser = (usuarioEdited) => {
     usuario = usuarioEdited;
     editStatus = true;
   };
 
+  //Actualizar datos en db
   const updateUser = () => {
-    let updatedProduct = {
-      konami_id: usuario.konami_id,
-      username: usuario.username,
-      password: usuario.password,
-    };
-    users = users.map((user) =>
-      user.konami_id === usuario.konami_id ? updatedProduct : user
-    );
-    Notiflix.Notify.info("Usuario modificado con exito!");
+    try {
+      let updatedProduct = {
+        idKonami: usuario.idKonami,
+        username: usuario.username,
+        password: usuario.password,
+      };
+      updateDoc(doc(db, "users", usuario.id), updatedProduct); //Conectar a la db y enviar data
+      Notiflix.Notify.info("Usuario modificado con exito!");
+    } catch (error) {
+      Notiflix.Notify.failure("Usuario no pudo ser modificado: " + error);
+    }
   };
 
+  //Funcion para eliminar usuario
+  const deleteUser = async (id) => {
+    try {
+      await deleteDoc(doc(db, "users", id)); //Conectar a la db y enviar data
+      Notiflix.Notify.success("Usuario eliminado con exito!");
+    } catch (error) {
+      Notiflix.Notify.failure("Usuario no pudo ser eliminado" + error);
+    }
+  };
+
+  //Manejador de eventos para guardar usuario en db
   const onSubmitHadler = () => {
     if (!editStatus) {
       createUser();
@@ -65,19 +124,14 @@
     editStatus = false;
   };
 
+  //Funcion para limpiar formulario del front
   const limpiarFormulario = () => {
     usuario = {
-      konami_id: "",
+      idKonami: "",
       username: "",
       password: "",
     };
   };
-
-  const deleteUser = (id) => {
-    users = users.filter((user) => user.konami_id !== id);
-    Notiflix.Notify.warning("Usuario eliminado con exito!");
-  };
-  /************************************************************************/
 </script>
 
 <body id="page-top">
@@ -243,7 +297,7 @@
             <div class="container p-4">
               <div class="row">
                 <div class="col-md-6">
-                  <h1 class="h3 mb-0 text-gray-800 mb-1" >{menux}</h1>
+                  <h1 class="h3 mb-0 text-gray-800 mb-1">{menux}</h1>
 
                   <div class="card mt-2">
                     <div class="card-body">
@@ -270,8 +324,8 @@
                           <input
                             type="text"
                             placeholder="Konami ID"
-                            id="konami_id"
-                            bind:value={usuario.konami_id}
+                            id="idKonami"
+                            bind:value={usuario.idKonami}
                             class="form-control"
                           />
                         </div>
@@ -312,10 +366,10 @@
                         <div class="col-md-8 m-3">
                           <h5><strong>{user.username}</strong></h5>
                           <h5>{user.password}</h5>
-                          <h5>{user.konami_id}</h5>
-                          
+                          <h5>{user.idKonami}</h5>
+
                           <button
-                            on:click={() => deleteUser(user.konami_id)}
+                            on:click={() => deleteUser(user.id)}
                             class="btn btn-danger"
                           >
                             Eliminar
