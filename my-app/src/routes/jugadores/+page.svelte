@@ -12,34 +12,26 @@
   let editStatus = false;
   let users = [
     {
-      id: v4(),
+      konami_id: "qwe456",
       username: "Jorge",
       password: "admin",
-      descripcion: "Jugador experto",
-      categoria: "Administrador",
     },
     {
-      id: v4(),
-      username: "Daniel",
-      password: "123",
-      descripcion: "Programador",
-      categoria: "Jugador",
+      konami_id: "abc123",
+      username: "Jorge",
+      password: "admin",
     },
   ];
   let usuario = {
-    id: v4(),
+    konami_id: "",
     username: "",
     password: "",
-    descripcion: "",
-    categoria: "",
   };
   const createUser = () => {
     const newUser = {
-      id: v4(),
+      konami_id: usuario.konami_id,
       username: usuario.username,
       password: usuario.password,
-      descripcion: usuario.descripcion,
-      categoria: usuario.categoria,
     };
     users = users.concat(newUser);
     limpiarFormulario();
@@ -53,14 +45,12 @@
 
   const updateUser = () => {
     let updatedProduct = {
-      id: usuario.id,
+      konami_id: usuario.konami_id,
       username: usuario.username,
       password: usuario.password,
-      descripcion: usuario.descripcion,
-      categoria: usuario.categoria,
     };
     users = users.map((user) =>
-      user.id === usuario.id ? updatedProduct : user
+      user.konami_id === usuario.konami_id ? updatedProduct : user
     );
     Notiflix.Notify.info("Usuario modificado con exito!");
   };
@@ -77,16 +67,14 @@
 
   const limpiarFormulario = () => {
     usuario = {
-      id: "",
+      konami_id: "",
       username: "",
       password: "",
-      descripcion: "",
-      categoria: "",
     };
   };
 
   const deleteUser = (id) => {
-    users = users.filter((user) => user.id !== id);
+    users = users.filter((user) => user.konami_id !== id);
     Notiflix.Notify.warning("Usuario eliminado con exito!");
   };
   /************************************************************************/
@@ -279,23 +267,13 @@
                           />
                         </div>
                         <div class="form-group">
-                          <textarea
-                            id="descripcion-usuario"
-                            rows="3"
-                            placeholder="Descripcion del usuario"
-                            bind:value={usuario.descripcion}
+                          <input
+                            type="text"
+                            placeholder="Konami ID"
+                            id="konami_id"
+                            bind:value={usuario.konami_id}
                             class="form-control"
-                          ></textarea>
-                        </div>
-                        <div class="form-group">
-                          <select
-                            id="categoria"
-                            bind:value={usuario.categoria}
-                            class="form-control"
-                          >
-                            <option value="Jugador">Jugador</option>
-                            <option value="Administrador">Administrador</option>
-                          </select>
+                          />
                         </div>
                         <button class="btn btn-primary" id="save">
                           {#if editStatus}
@@ -334,12 +312,10 @@
                         <div class="col-md-8 m-3">
                           <h5><strong>{user.username}</strong></h5>
                           <h5>{user.password}</h5>
-                          <span>
-                            <small>{user.categoria}</small>
-                          </span>
-                          <p>{user.descripcion}</p>
+                          <h5>{user.konami_id}</h5>
+                          
                           <button
-                            on:click={() => deleteUser(user.id)}
+                            on:click={() => deleteUser(user.konami_id)}
                             class="btn btn-danger"
                           >
                             Eliminar
