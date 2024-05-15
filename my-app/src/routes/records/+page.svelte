@@ -3,6 +3,89 @@
   let menu= "Records"
   let formato = ["06-2001", "07-2000"]
   let pagina = 0;
+  let fecha = fechaActual();
+  
+  function fechaActual(){
+
+    let fecha = new Date().getFullYear().toString()+"-";
+
+      if (new Date().getMonth().toString().localeCompare("9")==-1){
+
+          let mes = parseInt(new Date().getMonth().toString()) + 1;
+          fecha += "0"+ mes.toString();
+      }
+      else if (new Date().getMonth().toString().localeCompare("9")==-1){
+
+          fecha += "10";
+      }
+      else{
+
+          fecha += new Date().getMonth().toString();
+      }
+
+    return fecha;
+  }
+
+  function cambiarMPorY(input){
+
+    input = input.slice(5, input.length) + "-" + input.slice(0,4);
+
+    return input;
+  }
+
+  function cambiarVistaInsertar(){
+
+    pagina = 1;
+  }
+
+  function cambiarVistaLista(){
+
+    pagina = 0;
+  }
+
+  function buscarFormato(formato, fecha){
+
+    for (let i = 0; i < formato.length; i++){
+
+      if (formato[i]==fecha){
+
+          return i;
+      }
+    }
+    
+    return -1;
+  }
+
+  function handle(e){
+
+    const target = e.target;
+    if (target.id=="calendario"){
+
+        fecha = target.value;
+    }
+  }
+
+  function nuevoFormato(){
+
+    if (buscarFormato(formato, cambiarMPorY(fecha)) < 0){
+
+        if (window.confirm("Esta seguro de crear el formato [" + cambiarMPorY(fecha) + "]")){
+
+            formato.push(cambiarMPorY(fecha));
+            formato.sort();
+            window.alert("El formato [" + cambiarMPorY(fecha) + "] fue creado con exito");
+        }
+        else{
+
+            window.alert("No fue creado el formato [" + cambiarMPorY(fecha) + "]");
+        }
+    }
+    else{
+
+        window.alert("El formato que intenta insertar ya existe");
+    }
+  }
+
 </script>
 
 <body id="page-top">
@@ -158,83 +241,91 @@
         <!-- Begin Page Content -->
         <div class="container-fluid">
           <!-- Page Heading -->
-          <div
-            class="d-sm-flex align-items-center justify-content-between mb-4"
-          >
-          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
-          <div class="container mt-3 mb-4">
-          <div class="col-lg-9 mt-4 mt-lg-0">
-              <div class="row">
-                <div class="col-md-12">
-                  <div class="user-dashboard-info-box table-responsive mb-0 bg-white p-4 shadow-sm">
-                    {#if formato[0]!=null && pagina == 0}
-                    <table class="table manage-candidates-top mb-0">
-                      <thead>
-                        <tr>
-                          <th>Formato</th>
-                          <th class="text-center">Estado</th>
-                          <th class="action text-right">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {#each formato as e, num}
-                        {#if num+1 <= 6}
-                        <tr class="candidates-list">
-                          <td class="title">
-                            <div class="candidate-list-details">
-                              <div class="candidate-list-info">
-                                <div class="candidate-list-title">
-                                  <span class="candidate-list-time order-1">{e}</span>
+          {#if pagina == 0}
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css" integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+            <div class="container mt-3 mb-4">
+              <div class="col-lg-9 mt-4 mt-lg-0">
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="user-dashboard-info-box table-responsive mb-0 bg-white p-4 shadow-sm">
+                      {#if formato[0]!=null && pagina == 0}
+                      <table class="table manage-candidates-top mb-0">
+                        <thead>
+                          <tr>
+                            <th>Formato</th>
+                            <th class="text-center">Estado</th>
+                            <th class="action text-right">Acciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {#each formato as e, num}
+                          {#if num+1 <= 6}
+                          <tr class="candidates-list">
+                            <td class="title">
+                              <div class="candidate-list-details">
+                                <div class="candidate-list-info">
+                                  <div class="candidate-list-title">
+                                    <span class="candidate-list-time order-1">{e}</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </td>
-                          <td class="candidate-list-favourite-time text-center">
-                            {#if num==0}
-                            <a class="candidate-list-favourite order-2 text-danger"><i class="fas fa-heart"></i></a>
-                            <span class="candidate-list-time order-1">Actual</span>
-                            {:else}
-                            <span class="candidate-list-time order-1">Legado</span>
-                            {/if}
-                          </td>
-                          <td>
-                            <ul class="list-unstyled mb-0 d-flex justify-content-end">
-                              <li><a href="#" class="text-primary" data-toggle="tooltip" title="" data-original-title="view"><i class="far fa-eye"></i></a></li>
-                              <li><a href="#" class="text-info" data-toggle="tooltip" title="" data-original-title="Edit"><i class="fas fa-pencil-alt"></i></a></li>
-                              <li><a href="#" class="text-danger" data-toggle="tooltip" title="" data-original-title="Delete"><i class="far fa-trash-alt"></i></a></li>
-                            </ul>
-                          </td>
-                        </tr>
-                        {/if}
-                        {/each}
-                      </tbody>
-                    </table>
-                    <div class="text-center mt-3 mt-sm-3">
-                      <button class="btn btn-primary">Insertar nuevo formato</button>
+                            </td>
+                            <td class="candidate-list-favourite-time text-center">
+                              {#if num==0}
+                              <a class="candidate-list-favourite order-2 text-danger"></a><i class="fas fa-heart"></i>
+                              <span class="candidate-list-time order-1">Actual</span>
+                              {:else}
+                              <span class="candidate-list-time order-1">Legado</span>
+                              {/if}
+                            </td>
+                            <td>
+                              <ul class="list-unstyled mb-0 d-flex justify-content-end">
+                                <li><a href="#" class="text-primary" data-toggle="tooltip" title="" data-original-title="view"><i class="far fa-eye"></i></a></li>
+                                <li><a href="#" class="text-info" data-toggle="tooltip" title="" data-original-title="Edit"><i class="fas fa-pencil-alt"></i></a></li>
+                                <li><a href="#" class="text-danger" data-toggle="tooltip" title="" data-original-title="Delete"><i class="far fa-trash-alt"></i></a></li>
+                              </ul>
+                            </td>
+                          </tr>
+                          {/if}
+                          {/each}
+                        </tbody>
+                      </table>
+                      <div class="text-center mt-3 mt-sm-3">
+                        <button class="btn btn-primary" on:click={cambiarVistaInsertar}>Insertar nuevo formato</button>
+                      </div>
+                      {:else if formato[0]==null && pagina == 0}
+                      <div class="text-center mt-3 mt-sm-3">
+                        <button class="btn btn-primary" on:click={cambiarVistaInsertar}>Insertar nuevo formato</button>
+                        <br><br>
+                      </div>
+                      {/if}
                     </div>
-                    {:else if formato[0]==null && pagina == 0}
-                    <div class="text-center mt-3 mt-sm-3">
-                      <button class="btn btn-primary">Insertar nuevo formato</button>
-                      <br><br>
-                    </div>
-                    {/if}
                   </div>
                 </div>
               </div>
+            </div>   
+          </div>
+          {:else if pagina == 1}
+          <div class="container">
+            <button class="btn btn-primary" on:click={cambiarVistaLista}>Regresar</button>
+            <div class="abs-center">
+              <form action="#" class="border p-3 form">
+                <div class="form-group">
+                  <div class="mb-3">
+                      <label for="calendario">Introduzca la fecha del nuevo formato</label>
+                      <input type="month" value = {fecha} class="form-control" id = "calendario" min = "1999-07" on:change={handle}>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary" on:click={nuevoFormato}>Insertar</button>
+              </form>
             </div>
           </div>
-            
-          </div>
+          {/if}
         </div>
-        <!-- /.container-fluid -->
       </div>
-      <!-- End of Main Content -->
-
-      <!-- End of Footer -->
     </div>
-    <!-- End of Content Wrapper -->
   </div>
-  <!-- End of Page Wrapper -->
 </body>
 
 <style>
@@ -251,6 +342,23 @@
       box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;
   }    
 
+  .candidate-list-details ul li {
+      margin: 5px 10px 5px 0px;
+      font-size: 13px;
+  }
+
+  .bg-white {
+      background-color: #ffffff !important;
+  }
+  .p-4 {
+      padding: 1.5rem!important;
+  }
+  .mb-0, .my-0 {
+      margin-bottom: 0!important;
+  }
+  .shadow-sm {
+      box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;
+  }
   .user-dashboard-info-box .title {
       display: -webkit-box;
       display: -ms-flexbox;
@@ -289,15 +397,8 @@
       color: #969696;
   }
 
-  /* Candidate List */
-
   .candidate-list-title {
       margin-bottom: 5px;
-  }
-
-  .candidate-list-details ul li {
-      margin: 5px 10px 5px 0px;
-      font-size: 13px;
   }
 
   .candidate-list .candidate-list-favourite-time span {
@@ -323,17 +424,14 @@
       background: #ffffff;
       color: #e74c3c;
   }
+  .abs-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    }
 
-  .bg-white {
-      background-color: #ffffff !important;
-  }
-  .p-4 {
-      padding: 1.5rem!important;
-  }
-  .mb-0, .my-0 {
-      margin-bottom: 0!important;
-  }
-  .shadow-sm {
-      box-shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important;
-  }
+    .form {
+    width: 450px;
+    }
 </style>
