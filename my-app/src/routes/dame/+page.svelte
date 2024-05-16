@@ -1,5 +1,62 @@
 <script>
+  import Notiflix from "notiflix";
+  //Importaciones para db
+  import { db } from "../firebase";
+  import {
+    addDoc,
+    collection,
+    onSnapshot,
+    deleteDoc,
+    doc,
+    updateDoc,
+    QuerySnapshot,
+  } from "firebase/firestore";
+
+  import { onDestroy } from "svelte";
+
   let menu = "Prestamo de cartas";
+  let cartas = [];
+
+  const onsub = onSnapshot(
+    collection(db, "cartaBiblioteca"),
+    (QuerySnapshot) => {
+      cartas = QuerySnapshot.docs.map((doc) => {
+        return { ...doc.data(), id: doc.id };
+      });
+    },
+    (err) => {
+      console.log(err);
+    },
+  );
+
+  async function pedirPrestamo(ID) {
+    let cantidad = prompt("Por favor, ingresa la cantidad de préstamos (1, 2 o 3)", "1");
+    try{
+      const nuevoPrestamo = {
+        nombrecarta: cartas.find((carta) => carta.id === ID).nombre,
+        cantidad: cantidad,
+        cartaID: ID,
+        usuario: "admin",
+        fecha: new Date().toLocaleDateString(),
+        estado: "Pendiente",
+      };
+      if(cantidad > cartas.find((carta) => carta.id === ID).cantidad){
+        throw new Error("No hay suficientes cartas en la biblioteca");
+      }
+      else if(cantidad < 1 || cantidad > 3){
+        throw new Error("Cantidad no válida");
+      }
+      await addDoc(collection(db, "loans"), nuevoPrestamo);
+      Notiflix.Notify.success("Solicitud de préstamo enviada");
+
+    } catch (e){
+      Notiflix.Notify.failure("Solicitud de préstamo cancelada por " +  e.message);
+    }
+    
+  }
+
+  onDestroy(onsub);
+
 </script>
 
 <body id="page-top">
@@ -134,7 +191,6 @@
                   </svg>
                   Salir
                 </button>
-                
               </a>
               <!-- logout -->
               <div
@@ -167,14 +223,40 @@
           </div>
         </div>
         <!-- /.container-fluid -->
-      </div>
-      <!-- End of Main Content -->
+        <!--{JSON.stringify(cartas)}-->
+        <table id="Table" class="table table-striped" style="width:100%" data-toggle="table" data-seach="true" data-searchable="true"
+        data-pagination="true">
+          <thead> 
+            <tr>
+              <th>Nombre de la carta</th>
+              <th>Tipo</th>
+              <th>Cantidad en biblioteca</th>
+              <th>ID</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          {#each cartas as carta (carta.id)}
+            <tbody>
+              <tr>
+                <td>{carta.nombre}</td>
+                <td>{carta.tipo}</td>
+                <td>{carta.cantidad}</td>
+                <td>{carta.id}</td>
+                <td>
+                  <button on:click={() => pedirPrestamo(carta.id)}>Pedir prestamo</button>
+                </td>
+              </tr>
+            </tbody>
+          {/each}
+        </table>
+        <!-- End of Main Content -->
 
-      <!-- End of Footer -->
+        <!-- End of Footer -->
+      </div>
+      <!-- End of Content Wrapper -->
     </div>
-    <!-- End of Content Wrapper -->
+    <!-- End of Page Wrapper -->
   </div>
-  <!-- End of Page Wrapper -->
 </body>
 
 <style>
