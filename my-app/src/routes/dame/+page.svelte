@@ -21,7 +21,14 @@
 
   function handle(e){
 
-    console.log(e);
+    let a = e.target.parentNode.children[0].id;
+    let b = e.target.parentNode.children[1].id; 
+
+    const btna = document.getElementById(a);
+    const btnb = document.getElementById(b);
+
+    btna.disabled = true;
+    btnb.disabled = true;
   }
 
   const onsub = onSnapshot(
@@ -332,10 +339,10 @@
                   <td>{loan.estado}</td>
                   <td>{loan.usuario}</td>
                   <td>
-                    <button on:click={() => {AcepRech(loan.id, "Aceptado", loan.cantidad, loan.cartaID); handle}}
+                    <button id = {"btna"+num} on:click={handle} on:click={() => AcepRech(loan.id, "Aceptado", loan.cantidad, loan.cartaID)}
                       >Aceptar</button
                     >
-                    <button on:click={() => {AcepRech(loan.id, "Rechazado", loan.cantidad, loan.cartaID); handle}}
+                    <button id = {"btnb"+num} on:click={handle} on:click={() => AcepRech(loan.id, "Rechazado", loan.cantidad, loan.cartaID)}
                       >Rechazar</button
                     >
                 </tr>
