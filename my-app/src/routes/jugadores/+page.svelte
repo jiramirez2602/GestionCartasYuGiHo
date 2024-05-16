@@ -122,6 +122,12 @@
         username: usuario.username,
         password: usuario.password,
       };
+
+      
+      if (true) {
+        throw new Error("Username ya existe");
+      } 
+
       updateDoc(doc(db, "users", usuario.id), updatedUser); //Conectar a la db y enviar data
       Notiflix.Notify.info("Usuario modificado con exito!");
       users = [];

@@ -1,9 +1,10 @@
 <script>
     import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
 
     onMount(() => {
         // Redireccionar a la página de inicio de sesión
-        window.location.href = '/login';
+        goto('/login');
     });
 </script>
 
