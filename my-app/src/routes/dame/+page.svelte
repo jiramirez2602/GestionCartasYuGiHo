@@ -16,6 +16,8 @@
 
   let menu = "Prestamo de cartas";
   let cartas = [];
+  let loans = [];
+  let vista = 0;
 
   const onsub = onSnapshot(
     collection(db, "cartaBiblioteca"),
@@ -26,12 +28,27 @@
     },
     (err) => {
       console.log(err);
+    }
+  );
+
+  const onsub1 = onSnapshot(
+    collection(db, "loans"),
+    (QuerySnapshot) => {
+      loans = QuerySnapshot.docs.map((doc) => {
+        return { ...doc.data(), id: doc.id };
+      });
     },
+    (err) => {
+      console.log(err);
+    }
   );
 
   async function pedirPrestamo(ID) {
-    let cantidad = prompt("Por favor, ingresa la cantidad de préstamos (1, 2 o 3)", "1");
-    try{
+    let cantidad = prompt(
+      "Por favor, ingresa la cantidad de préstamos (1, 2 o 3)",
+      "1"
+    );
+    try {
       const nuevoPrestamo = {
         nombrecarta: cartas.find((carta) => carta.id === ID).nombre,
         cantidad: cantidad,
@@ -40,23 +57,41 @@
         fecha: new Date().toLocaleDateString(),
         estado: "Pendiente",
       };
-      if(cantidad > cartas.find((carta) => carta.id === ID).cantidad){
+      if (cantidad > cartas.find((carta) => carta.id === ID).cantidad) {
         throw new Error("No hay suficientes cartas en la biblioteca");
-      }
-      else if(cantidad < 1 || cantidad > 3){
+      } else if (cantidad < 1 || cantidad > 3) {
         throw new Error("Cantidad no válida");
       }
       await addDoc(collection(db, "loans"), nuevoPrestamo);
       Notiflix.Notify.success("Solicitud de préstamo enviada");
-
-    } catch (e){
-      Notiflix.Notify.failure("Solicitud de préstamo cancelada por " +  e.message);
+    } catch (e) {
+      Notiflix.Notify.failure(
+        "Solicitud de préstamo cancelada por " + e.message
+      );
     }
-    
   }
 
   onDestroy(onsub);
+  onDestroy(onsub1);
 
+  function AcepRech(ID, estado, prestadoa, cartaID) {
+    updateDoc(doc(db, "loans", ID), {
+      estado: estado,
+    });
+    updateDoc(doc(db, "cartaBiblioteca", cartaID), {
+      cantidad: cantidad-prestadoa,
+      prestado: +prestadoa,
+    });
+    
+  }
+
+  function cambiarvista(x) {
+    if (x == 0) {
+      vista = 0;
+    } else {
+      vista = 1;
+    }
+  }
 </script>
 
 <body id="page-top">
@@ -146,7 +181,6 @@
           </button>
 
           <!-- Topbar Navbar -->
-          <!-- Topbar Navbar -->
           <ul class="navbar-nav ml-auto">
             <li class="nav-item mt-2">
               <img
@@ -221,36 +255,91 @@
           >
             <h1 class="h3 mb-0 text-gray-800">{menu}</h1>
           </div>
+          <button on:click={() => cambiarvista(0)}>Pedir Prestamo</button>
+          <button on:click={() => cambiarvista(1)}>Administrar Prestamos</button
+          >
         </div>
         <!-- /.container-fluid -->
-        <!--{JSON.stringify(cartas)}-->
-        <table id="Table" class="table table-striped" style="width:100%" data-toggle="table" data-seach="true" data-searchable="true"
-        data-pagination="true">
-          <thead> 
-            <tr>
-              <th>Nombre de la carta</th>
-              <th>Tipo</th>
-              <th>Cantidad en biblioteca</th>
-              <th>ID</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          {#each cartas as carta (carta.id)}
-            <tbody>
+        {#if vista == 0}
+          <table
+            id="Table"
+            class="table table-striped"
+            style="width:100%"
+            data-toggle="table"
+            data-seach="true"
+            data-searchable="true"
+            data-pagination="true"
+          >
+            <thead>
               <tr>
-                <td>{carta.nombre}</td>
-                <td>{carta.tipo}</td>
-                <td>{carta.cantidad}</td>
-                <td>{carta.id}</td>
-                <td>
-                  <button on:click={() => pedirPrestamo(carta.id)}>Pedir prestamo</button>
-                </td>
+                <th>Nombre de la carta</th>
+                <th>Tipo</th>
+                <th>Cantidad en biblioteca</th>
+                <th>ID</th>
+                <th>Acción</th>
               </tr>
-            </tbody>
-          {/each}
-        </table>
-        <!-- End of Main Content -->
+            </thead>
+            {#each cartas as carta (carta.id)}
+              <tbody>
+                <tr>
+                  <td>{carta.nombre}</td>
+                  <td>{carta.tipo}</td>
+                  <td>{carta.cantidad}</td>
+                  <td>{carta.id}</td>
+                  <td>
+                    <button on:click={() => pedirPrestamo(carta.id)}
+                      >Pedir prestamo</button
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            {/each}
+          </table>
+        {/if}
+        {#if vista == 1}
+          <table
+            id="Table"
+            class="table table-striped"
+            style="width:100%"
+            data-toggle="table"
+            data-seach="true"
+            data-searchable="true"
+            data-pagination="true"
+          >
+            <thead>
+              <tr>
+                <th>Nombre de la carta</th>
+                <th>Cantidad a prestamo</th>
+                <th>ID de la carta</th>
+                <th>Fecha de la solicitud</th>
+                <th>Estado</th>
+                <th>Usuario</th>
+                <th>Aceptar/Rechazar</th>
+              </tr>
+            </thead>
+            {#each loans as loan (loan.id)}
+              <tbody>
+                <tr>
+                  <td>{loan.nombrecarta}</td>
+                  <td>{loan.cantidad}</td>
+                  <td>{loan.cartaID}</td>
+                  <td>{loan.fecha}</td>
+                  <td>{loan.estado}</td>
+                  <td>{loan.usuario}</td>
+                  <td>
+                    <button on:click={() => AcepRech(loan.id, "Aceptado", loan.cantidad, loan.cartaID)}
+                      >Aceptar</button
+                    >
+                    <button on:click={() => AcepRech(loan.id, "Rechazado", loan.cantidad, loan.cartaID)}
+                      >Rechazar</button
+                    >
+                </tr>
+              </tbody>
+            {/each}
+          </table>
+        {/if}
 
+        <!-- End of Main Content -->
         <!-- End of Footer -->
       </div>
       <!-- End of Content Wrapper -->
@@ -262,5 +351,10 @@
 <style>
   .sidebar {
     background-color: rgb(242, 91, 44);
+  }
+  button:hover {
+    cursor: pointer;
+    background-color: rgb(175, 123, 45);
+    color: black;
   }
 </style>
