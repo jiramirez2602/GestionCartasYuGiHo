@@ -154,7 +154,7 @@
       <li class="nav-item">
         <a class="nav-link" href="/dame">
           <i class="fas fa-fw fa-chart-area"></i>
-          <span style="font-size:larger;">Dame cartas</span></a
+          <span style="font-size:larger;">Prestamos</span></a
         >
       </li>
 

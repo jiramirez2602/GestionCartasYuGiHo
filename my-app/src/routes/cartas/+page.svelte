@@ -196,7 +196,7 @@ return false;
       <li class="nav-item">
         <a class="nav-link" href="/dame">
           <i class="fas fa-fw fa-chart-area"></i>
-          <span style="font-size:larger;">Dame cartas</span></a
+          <span style="font-size:larger;">Prestamos</span></a
         >
       </li>
 
@@ -323,10 +323,10 @@ return false;
                           
                          
                           
-           <div class="card mt-2">
+           <div class="card mt-2 p-3">
             
-            <h5>Introduzca el nombre exacto de la carta</h5>
-                    <div class="card-body">
+            <h5 class="ml-2">Introduzca el nombre exacto de la carta</h5>
+                    <div class="card-body p-1">
                       <form on:submit|preventDefault={onSubmitHadler}>
                         <div class="form-group">
                           <input
@@ -384,7 +384,7 @@ return false;
                     </div>
                   {/if}
                   
-                  <table id="Table" class="table table-striped" style="width:100%" data-toggle="table" data-seach="true" data-searchable="true"
+                  <table id="Table" class="table table-striped ml-3 mt-3" style="width:100%" data-toggle="table" data-seach="true" data-searchable="true"
                   data-pagination="true">
                     <thead> 
                       <tr>
