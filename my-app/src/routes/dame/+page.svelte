@@ -19,7 +19,6 @@
   let loans = [];
   let vista = 0;
 
-<<<<<<< HEAD
   function handle(e){
 
     let a = e.target.parentNode.children[0].id;
@@ -32,8 +31,6 @@
     btnb.disabled = true;
   }
 
-=======
->>>>>>> 508f3d3d4d39a45b22b336e48aa022e50fef5231
   const onsub = onSnapshot(
     collection(db, "cartaBiblioteca"),
     (QuerySnapshot) => {
@@ -335,7 +332,7 @@
                 <th>Aceptar/Rechazar</th>
               </tr>
             </thead>
-            {#each loans as loan (loan.id)}
+            {#each loans as loan, num (loan.id)}
               <tbody>
                 <tr>
                   <td>{loan.nombrecarta}</td>
@@ -345,17 +342,10 @@
                   <td>{loan.estado}</td>
                   <td>{loan.usuario}</td>
                   <td>
-<<<<<<< HEAD
                     <button id = {"btna"+num} on:click={handle} on:click={() => AcepRech(loan.id, "Aceptado", loan.cantidad, loan.cartaID)}
                       >Aceptar</button
                     >
                     <button id = {"btnb"+num} on:click={handle} on:click={() => AcepRech(loan.id, "Rechazado", loan.cantidad, loan.cartaID)}
-=======
-                    <button on:click={() => AcepRech(loan.id, "Aceptado", loan.cantidad, loan.cartaID)}
-                      >Aceptar</button
-                    >
-                    <button on:click={() => AcepRech(loan.id, "Rechazado", loan.cantidad, loan.cartaID)}
->>>>>>> 508f3d3d4d39a45b22b336e48aa022e50fef5231
                       >Rechazar</button
                     >
                 </tr>
