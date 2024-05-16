@@ -122,11 +122,14 @@
         username: usuario.username,
         password: usuario.password,
       };
-
-      
-      if (true) {
-        throw new Error("Username ya existe");
-      } 
+      // console.log(usernameToUpdate + " original");
+      // console.log(updatedUser.username + " nuevo");
+      // console.log();
+      if ((usernameToUpdate != updatedUser.username))  {
+        if (users.find((usuario) => usuario.username === updatedUser.username)) {
+          throw new Error("Username ya existe");
+        }
+      }
 
       updateDoc(doc(db, "users", usuario.id), updatedUser); //Conectar a la db y enviar data
       Notiflix.Notify.info("Usuario modificado con exito!");
@@ -153,7 +156,7 @@
     } else {
       updateUser();
     }
-    limpiarFormulario();
+    //limpiarFormulario();
     editStatus = false;
   };
 
@@ -416,12 +419,13 @@
                           >
                             Eliminar
                           </button>
-                          <button
+                          <!-- TODO: Acomodar esta shit                         <button
                             on:click={() => updateDataToUpdateUser(user)}
                             class="btn btn-secondary"
                           >
                             Modificar
-                          </button>
+                          </button>-->
+
                         </div>
                       </div>
                     </div>
