@@ -264,7 +264,7 @@
             <li class="nav-item dropdown no-arrow">
               <a
                 class="nav-link dropdown-toggle"
-                href="/"
+                href="/login"
                 id="userDropdown"
                 role="button"
                 data-toggle="dropdown"
@@ -273,6 +273,7 @@
               >
                 <span class="mr-2 d-none d-lg-inline text-gray-600 small"
                 ></span>
+
                 <button type="button" class="btn btn-outline-danger">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -293,6 +294,7 @@
                   </svg>
                   Salir
                 </button>
+                
               </a>
               <!-- logout -->
               <div
