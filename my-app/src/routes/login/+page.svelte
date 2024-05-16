@@ -1,7 +1,7 @@
 <!-- <a href="/about">About my site</a> -->
 <script>
   import Notiflix from "notiflix";
-  import { goto } from '$app/navigation';
+  import { goto } from "$app/navigation";
 
   let mensaje = "Por favor introduce tu usuario y contraseña!";
   let username = "";
@@ -36,14 +36,14 @@
     // Aquí puedes agregar la lógica para el inicio de sesión
     if (username === "admin" && password === "admin") {
       Notiflix.Notify.success("Bienvenido, has iniciado sesión como admin!");
-        goto('/jugadores');
+      goto("/jugadores");
     } else if (comparador && comparador.password == password) {
       Notiflix.Notify.success("Bienvenido, has iniciado sesión como jugador!");
-      //TODO: //Redireccionar a la página de jugadores
-      goto('/');
+      goto("/jugadores");
     } else {
       Notiflix.Notify.failure("Usuario o contraseña inválida!");
     }
+    
   }
 </script>
 
