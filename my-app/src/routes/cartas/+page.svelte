@@ -58,7 +58,7 @@ onSnapshot(collection(db,"cartaBiblioteca"),
       nombre: cartasBiblioteca.nombre,
       tipo: cartasBiblioteca.tipo,
       cantidad: cartasBiblioteca.cantidad,
-      prestadas: 0,
+      prestadas:0
       
     };
 
@@ -155,17 +155,14 @@ return false;
   <!-- Page Wrapper -->
   <div id="wrapper">
     <!-- Sidebar -->
-    <ul
-      class="navbar-nav sidebar sidebar-dark accordion"
-      id="accordionSidebar"
-    >
+    <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar">
       <!-- Sidebar - Brand -->
       <a
         class="sidebar-brand d-flex align-items-center justify-content-center"
-        href="index.html"
+        href="/cartas"
       >
         <div class="sidebar-brand-icon mt-4">
-         <img
+          <img
             src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/isotipo.png?alt=media&token=55b51f65-c906-4427-ba2b-39bfea66ada9"
             alt="Descripción de la imagen"
             style="width: 120px;"
@@ -180,13 +177,26 @@ return false;
       <hr class="sidebar-divider" />
 
       <!-- Heading -->
-      <div  style="font-size:larger; color:white; text-align:center"  class="sidebar-heading">Menu</div>
+      <div
+        style="font-size:larger; color:white; text-align:center"
+        class="sidebar-heading"
+      >
+        Menu
+      </div>
 
       <!-- Nav Item - Charts -->
       <li class="nav-item">
         <a class="nav-link" href="/cartas">
           <i class="fas fa-fw fa-chart-area"></i>
           <span style="font-size:larger;">Cartas</span></a
+        >
+      </li>
+
+      <!-- Nav Item - Charts -->
+      <li class="nav-item">
+        <a class="nav-link" href="/dame">
+          <i class="fas fa-fw fa-chart-area"></i>
+          <span style="font-size:larger;">Dame cartas</span></a
         >
       </li>
 
@@ -206,13 +216,7 @@ return false;
         >
       </li>
 
-      <!-- Nav Item - Tables -->
-      <li class="nav-item">
-        <a class="nav-link" href="/prestamos">
-          <i class="fas fa-fw fa-table"></i>
-          <span style="font-size:larger;">Préstamos</span></a
-        >
-      </li>
+
 
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block" />
@@ -236,7 +240,7 @@ return false;
           </button>
 
           <!-- Topbar Navbar -->
-         <ul class="navbar-nav ml-auto">
+          <ul class="navbar-nav ml-auto">
             <li class="nav-item mt-2">
               <img
                 src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/logotipo.png?alt=media&token=8e737513-5251-42be-b83f-efaeb59edf79"
@@ -250,7 +254,7 @@ return false;
             <li class="nav-item dropdown no-arrow">
               <a
                 class="nav-link dropdown-toggle"
-                href="/"
+                href="/login"
                 id="userDropdown"
                 role="button"
                 data-toggle="dropdown"
@@ -259,6 +263,7 @@ return false;
               >
                 <span class="mr-2 d-none d-lg-inline text-gray-600 small"
                 ></span>
+
                 <button type="button" class="btn btn-outline-danger">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -279,6 +284,7 @@ return false;
                   </svg>
                   Salir
                 </button>
+                
               </a>
               <!-- logout -->
               <div
@@ -300,6 +306,7 @@ return false;
           </ul>
         </nav>
         <!-- End of Topbar -->
+
 
         <!-- Begin Page Content -->
         <div class="container-fluid">
