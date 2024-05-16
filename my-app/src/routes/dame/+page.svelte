@@ -19,6 +19,11 @@
   let loans = [];
   let vista = 0;
 
+  function handle(e){
+
+    console.log(e);
+  }
+
   const onsub = onSnapshot(
     collection(db, "cartaBiblioteca"),
     (QuerySnapshot) => {
@@ -317,7 +322,7 @@
                 <th>Aceptar/Rechazar</th>
               </tr>
             </thead>
-            {#each loans as loan (loan.id)}
+            {#each loans as loan, num (loan.id)}
               <tbody>
                 <tr>
                   <td>{loan.nombrecarta}</td>
@@ -327,10 +332,10 @@
                   <td>{loan.estado}</td>
                   <td>{loan.usuario}</td>
                   <td>
-                    <button on:click={() => AcepRech(loan.id, "Aceptado", loan.cantidad, loan.cartaID)}
+                    <button on:click={() => {AcepRech(loan.id, "Aceptado", loan.cantidad, loan.cartaID); handle}}
                       >Aceptar</button
                     >
-                    <button on:click={() => AcepRech(loan.id, "Rechazado", loan.cantidad, loan.cartaID)}
+                    <button on:click={() => {AcepRech(loan.id, "Rechazado", loan.cantidad, loan.cartaID); handle}}
                       >Rechazar</button
                     >
                 </tr>
