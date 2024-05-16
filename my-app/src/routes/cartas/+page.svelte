@@ -254,7 +254,7 @@ return false;
             <li class="nav-item dropdown no-arrow">
               <a
                 class="nav-link dropdown-toggle"
-                href="/login"
+                href="/"
                 id="userDropdown"
                 role="button"
                 data-toggle="dropdown"
@@ -293,7 +293,7 @@ return false;
               >
                 <a
                   class="dropdown-item"
-                  href="/login"
+                  href="/"
                   data-toggle="modal"
                   data-target="#logoutModal"
                 >

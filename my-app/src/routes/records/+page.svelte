@@ -223,7 +223,7 @@
               >
                 <a
                   class="dropdown-item"
-                  href="/login"
+                  href="/"
                   data-toggle="modal"
                   data-target="#logoutModal"
                 >
