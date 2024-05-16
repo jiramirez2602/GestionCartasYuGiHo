@@ -36,14 +36,11 @@
     // Aquí puedes agregar la lógica para el inicio de sesión
     if (username === "admin" && password === "admin") {
       Notiflix.Notify.success("Bienvenido, has iniciado sesión como admin!");
-
         goto('/jugadores');
-
     } else if (comparador && comparador.password == password) {
       Notiflix.Notify.success("Bienvenido, has iniciado sesión como jugador!");
       //TODO: //Redireccionar a la página de jugadores
       goto('/');
-
     } else {
       Notiflix.Notify.failure("Usuario o contraseña inválida!");
     }
