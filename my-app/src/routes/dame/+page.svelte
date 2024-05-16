@@ -270,15 +270,15 @@
           >
             <h1 class="h3 mb-0 text-gray-800">{menu}</h1>
           </div>
-          <button on:click={() => cambiarvista(0)}>Pedir Prestamo</button>
-          <button on:click={() => cambiarvista(1)}>Administrar Prestamos</button
+          <button class="btn btn-primary" on:click={() => cambiarvista(0)}>Pedir Prestamo</button>
+          <button class="btn btn-primary" on:click={() => cambiarvista(1)}>Administrar Prestamos</button
           >
         </div>
         <!-- /.container-fluid -->
         {#if vista == 0}
           <table
             id="Table"
-            class="table table-striped"
+            class="table table-striped m-3"
             style="width:100%"
             data-toggle="table"
             data-seach="true"
@@ -302,7 +302,7 @@
                   <td>{carta.cantidad}</td>
                   <td>{carta.id}</td>
                   <td>
-                    <button on:click={() => pedirPrestamo(carta.id)}
+                    <button class="btn btn-primary m-1 p-0" on:click={() => pedirPrestamo(carta.id)}
                       >Pedir prestamo</button
                     >
                   </td>
