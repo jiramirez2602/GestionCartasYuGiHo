@@ -8,7 +8,7 @@
   let formatos = [];
   let formato = {
     fecha: "",
-  };
+  }; //
 
   function fechaActual() {
     let fecha = new Date().getFullYear().toString() + "-";
