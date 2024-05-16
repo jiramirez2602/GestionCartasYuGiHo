@@ -1,19 +1,171 @@
 <script>
-  let menu = "Cartas";
+
+  let menu= "Cartas"
+  let cartas=[];
+    async  function LoadCards(){
+      const response = await fetch("https://db.ygoprodeck.com/api/v7/cardinfo.php")
+      const data = await response.json();
+      cartas= data.data;
+      console.log(data)
+    }
+    LoadCards();
+    
+  import Notiflix from "notiflix";
+  import {addDoc,collection,onSnapshot} from 'firebase/firestore'
+  import { db } from "../firebase";
+  let editStatus = false;
+
+let cartones=[];
+onSnapshot(collection(db,"cartaBiblioteca"),
+(querySnapshot)=>{
+ cartones= querySnapshot.docs.map((doc)=>{
+
+    return{...doc.data()};
+  }) 
+  console.log(cartones)
+}
+  ,(err)=>{
+    console.log(err)
+  })
+
+  let cartasBiblioteca = [
+    {
+      
+      nombre: "Ash Blossom",
+      tipo: "Monstruo",
+      cantidad: 3,
+      
+    },
+    {
+      nombre: "Clock Wyvern",
+      tipo: "Monstruo",
+      cantidad: 5,
+    },
+  ];
+
+    let cartaBiblioteca=[{
+      
+        nombre: "",
+        tipo: "",
+        prestadas:0,
+        cantidad:0
+      }
+    ]
+
+    const createcartaBiblioteca = () => {
+          const newcartaBiblioteca = {
+      
+      nombre: cartasBiblioteca.nombre,
+      tipo: cartasBiblioteca.tipo,
+      cantidad: cartasBiblioteca.cantidad,
+      prestadas: 0,
+      
+    };
+
+    cartaBiblioteca=newcartaBiblioteca;
+    
+    limpiarFormulario();
+    Notiflix.Notify.success("Carta ingresada exitosamente!");
+  };
+  let foundElement;
+  let tipo_carta;
+  
+
+    const onSubmitHadler = async() => {
+    if (!editStatus) {
+      if(laCartaExisteAPI(cartasBiblioteca.nombre)){
+       cartasBiblioteca.tipo=tipoExiste(cartasBiblioteca.nombre);
+       cartasBiblioteca.cantidad=cantidadCorrecta(cartaBiblioteca.cantidad);
+       if(laCartaExiste(cartasBiblioteca.nombre)){
+        Notiflix.Notify.failure("la carta ya existe dentro de la biblioteca");
+       }else { 
+       
+       if(cantidadCorrecta(cartasBiblioteca.nombre)){
+          createcartaBiblioteca();
+         await addDoc(collection(db,"cartaBiblioteca"),cartaBiblioteca)}
+    }} else{ 
+      if(!laCartaExisteAPI(cartasBiblioteca.nombre)){
+
+        Notiflix.Notify.failure("la carta no existe");}}
+} else {
+      console.log ("h");
+      updateUser();
+    }
+    limpiarFormulario();
+    editStatus = false;
+  };
+
+  const limpiarFormulario = () => {
+    cartasBiblioteca = {
+      nombre: "",
+      tipo:"",
+      cantidad:0,
+      
+    };
+  };
+   
+  function laCartaExisteAPI(nombre){
+
+for (let i = 0; i < cartas.length; i++){
+
+  if(cartas[i].name===nombre) return 1;
+}
+return 0;
+}
+
+function laCartaExiste(nombre){
+  
+
+for (let i = 0; i < cartones.length; i++){
+
+
+  if(cartones[i].nombre===nombre) return 1;
+}
+return 0;
+}
+
+function tipoExiste(nombre){
+
+for (let i = 0; i < cartas.length; i++){
+
+  if(cartas[i].name===nombre) return cartas[i].type;
+}
+return "";
+}
+
+function cantidadCorrecta(){
+  
+  
+
+
+if(cartasBiblioteca.cantidad>0 && cartasBiblioteca.cantidad <27){
+  return cartasBiblioteca.cantidad;
+}else{
+ 
+
+   Notiflix.Notify.failure("ha ingresado demasiadas cartas!");
+  return false;
+}
+
+return false;
+}
 </script>
 
 <body id="page-top">
   <!-- Page Wrapper -->
   <div id="wrapper">
     <!-- Sidebar -->
-    <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar">
+    <ul
+      class="navbar-nav sidebar sidebar-dark accordion"
+      id="accordionSidebar"
+    >
       <!-- Sidebar - Brand -->
       <a
         class="sidebar-brand d-flex align-items-center justify-content-center"
-        href="/cartas"
+        href="index.html"
       >
         <div class="sidebar-brand-icon mt-4">
-          <img
+         <img
             src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/isotipo.png?alt=media&token=55b51f65-c906-4427-ba2b-39bfea66ada9"
             alt="Descripción de la imagen"
             style="width: 120px;"
@@ -28,26 +180,13 @@
       <hr class="sidebar-divider" />
 
       <!-- Heading -->
-      <div
-        style="font-size:larger; color:white; text-align:center"
-        class="sidebar-heading"
-      >
-        Menu
-      </div>
+      <div  style="font-size:larger; color:white; text-align:center"  class="sidebar-heading">Menu</div>
 
       <!-- Nav Item - Charts -->
       <li class="nav-item">
         <a class="nav-link" href="/cartas">
           <i class="fas fa-fw fa-chart-area"></i>
           <span style="font-size:larger;">Cartas</span></a
-        >
-      </li>
-
-      <!-- Nav Item - Charts -->
-      <li class="nav-item">
-        <a class="nav-link" href="/dame">
-          <i class="fas fa-fw fa-chart-area"></i>
-          <span style="font-size:larger;">Dame cartas</span></a
         >
       </li>
 
@@ -64,6 +203,14 @@
         <a class="nav-link" href="/records">
           <i class="fas fa-fw fa-chart-area"></i>
           <span style="font-size:larger;">Records</span></a
+        >
+      </li>
+
+      <!-- Nav Item - Tables -->
+      <li class="nav-item">
+        <a class="nav-link" href="/prestamos">
+          <i class="fas fa-fw fa-table"></i>
+          <span style="font-size:larger;">Préstamos</span></a
         >
       </li>
 
@@ -89,8 +236,7 @@
           </button>
 
           <!-- Topbar Navbar -->
-          <!-- Topbar Navbar -->
-          <ul class="navbar-nav ml-auto">
+         <ul class="navbar-nav ml-auto">
             <li class="nav-item mt-2">
               <img
                 src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/logotipo.png?alt=media&token=8e737513-5251-42be-b83f-efaeb59edf79"
@@ -104,7 +250,7 @@
             <li class="nav-item dropdown no-arrow">
               <a
                 class="nav-link dropdown-toggle"
-                href="/login"
+                href="/"
                 id="userDropdown"
                 role="button"
                 data-toggle="dropdown"
@@ -113,7 +259,6 @@
               >
                 <span class="mr-2 d-none d-lg-inline text-gray-600 small"
                 ></span>
-
                 <button type="button" class="btn btn-outline-danger">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -163,8 +308,131 @@
             class="d-sm-flex align-items-center justify-content-between mb-4"
           >
             <h1 class="h3 mb-0 text-gray-800">{menu}</h1>
+            
           </div>
-        </div>
+
+          <!--  comienzo a trabajar desde aqui   -->  
+          
+                          
+                         
+                          
+           <div class="card mt-2">
+            
+            <h5>Introduzca el nombre exacto de la carta</h5>
+                    <div class="card-body">
+                      <form on:submit|preventDefault={onSubmitHadler}>
+                        <div class="form-group">
+                          <input
+                            type="text"
+                            placeholder="Nombre de la carta"
+                            id="username"
+                            bind:value={cartasBiblioteca.nombre}
+                            class="form-control"
+                          />
+                        </div>
+                      
+                        
+                              
+                        <h5>Introduzca la cantidad de copias de la carta (debe ser menor a 27 copias)</h5>    
+                        <div class="form-group">
+                          <input
+                            type="text"
+                            placeholder="Cantidad"
+                            id="password"
+                            bind:value={cartasBiblioteca.cantidad}
+                            class="form-control"
+                          />
+                        </div>
+                       
+                        
+                        <button class="btn btn-primary" id="save">
+                          {#if editStatus}
+                            Modificar
+                          {:else}
+                            Guardar
+                          {/if}
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  {#if cartasBiblioteca === 0}
+                    <div class="conatainer" style="text-align: center;">
+                      <div class="row">
+                        <div class="card">
+                          <div class="card-body">
+                            <h2>No hay cartas en el sistema</h2>
+
+                            <img
+                              src="../../src/assets/img/no_encontrado.png"
+                              alt=""
+                              class="img-fluid mx-auto"
+                              width="200px"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {/if}
+                  
+                  <table id="Table" class="table table-striped" style="width:100%" data-toggle="table" data-seach="true" data-searchable="true"
+                  data-pagination="true">
+                    <thead> 
+                      <tr>
+                        <th>Nombre de la carta</th>
+                        <th>Tipo</th>
+                        <th>Cantidad en biblioteca</th>
+                        <th>Cantidad prestadas</th>
+                      </tr>
+                    </thead>
+                    {#each cartones as e}
+                      <tbody>
+                        <tr>
+                          <td>{e.nombre}</td>
+                          <td>{e.tipo}</td>
+                          <td>{e.cantidad}</td>
+                          <td>{e.prestadas}</td>
+                          
+                        </tr>
+                      </tbody>
+                    {/each}
+                  </table>
+                  <!-- 
+                  {#each cartones as e }
+                    <div class="card mt-2">
+                      <div class="row">
+                        <div class="col-md-8 m-3">
+                          <h5><strong>{e.nombre}</strong></h5>
+                          <h5>{e.tipo}</h5>
+                          <h5>{e.cantidad}</h5>
+                          
+                          
+                         <button
+                            on:click={() => deleteUser(user.id)} 
+                            class="btn btn-danger"
+                          > 
+                            Eliminar
+                          </button>
+                          <button
+                            on:click={() => updateDataToUpdateUser(user)}
+                            class="btn btn-secondary"
+                          >
+                            Modificar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  {/each}-->
+                </div>
+              
+            
+            <!------------------------------------------------------------------------------------------------------------->
+          
+        
+        
+
         <!-- /.container-fluid -->
       </div>
       <!-- End of Main Content -->
