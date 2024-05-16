@@ -19,6 +19,7 @@
   let loans = [];
   let vista = 0;
 
+<<<<<<< HEAD
   function handle(e){
 
     let a = e.target.parentNode.children[0].id;
@@ -31,6 +32,8 @@
     btnb.disabled = true;
   }
 
+=======
+>>>>>>> 508f3d3d4d39a45b22b336e48aa022e50fef5231
   const onsub = onSnapshot(
     collection(db, "cartaBiblioteca"),
     (QuerySnapshot) => {
@@ -69,10 +72,13 @@
         fecha: new Date().toLocaleDateString(),
         estado: "Pendiente",
       };
+      let total = parseInt(cartas.find((carta) => carta.id === ID).prestadas) + parseInt(cantidad)
       if (cantidad > cartas.find((carta) => carta.id === ID).cantidad) {
         throw new Error("No hay suficientes cartas en la biblioteca");
       } else if (cantidad < 1 || cantidad > 3) {
         throw new Error("Cantidad no válida");
+      }else if( total > parseInt(cartas.find((carta) => carta.id === ID).cantidad)){
+        throw new Error("No hay suficientes cartas en la biblioteca");
       }
       await addDoc(collection(db, "loans"), nuevoPrestamo);
       Notiflix.Notify.success("Solicitud de préstamo enviada");
@@ -329,7 +335,7 @@
                 <th>Aceptar/Rechazar</th>
               </tr>
             </thead>
-            {#each loans as loan, num (loan.id)}
+            {#each loans as loan (loan.id)}
               <tbody>
                 <tr>
                   <td>{loan.nombrecarta}</td>
@@ -339,10 +345,17 @@
                   <td>{loan.estado}</td>
                   <td>{loan.usuario}</td>
                   <td>
+<<<<<<< HEAD
                     <button id = {"btna"+num} on:click={handle} on:click={() => AcepRech(loan.id, "Aceptado", loan.cantidad, loan.cartaID)}
                       >Aceptar</button
                     >
                     <button id = {"btnb"+num} on:click={handle} on:click={() => AcepRech(loan.id, "Rechazado", loan.cantidad, loan.cartaID)}
+=======
+                    <button on:click={() => AcepRech(loan.id, "Aceptado", loan.cantidad, loan.cartaID)}
+                      >Aceptar</button
+                    >
+                    <button on:click={() => AcepRech(loan.id, "Rechazado", loan.cantidad, loan.cartaID)}
+>>>>>>> 508f3d3d4d39a45b22b336e48aa022e50fef5231
                       >Rechazar</button
                     >
                 </tr>
