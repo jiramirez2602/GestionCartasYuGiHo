@@ -78,9 +78,9 @@
     updateDoc(doc(db, "loans", ID), {
       estado: estado,
     });
+    let total = (parseInt(prestadoa)+ parseInt(cartas.find((carta) => carta.id === cartaID).prestadas));
     updateDoc(doc(db, "cartaBiblioteca", cartaID), {
-      cantidad: cantidad-prestadoa,
-      prestado: +prestadoa,
+      prestadas: total,
     });
     
   }
