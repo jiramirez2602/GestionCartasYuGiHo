@@ -128,6 +128,14 @@
         >
       </li>
 
+      <!-- Nav Item - Charts -->
+      <li class="nav-item">
+        <a class="nav-link" href="/dame">
+          <i class="fas fa-fw fa-chart-area"></i>
+          <span style="font-size:larger;">Dame cartas</span></a
+        >
+      </li>
+
       <!-- Nav Item - Tables -->
       <li class="nav-item">
         <a class="nav-link" href="/jugadores">
@@ -144,13 +152,7 @@
         >
       </li>
 
-      <!-- Nav Item - Tables -->
-      <li class="nav-item">
-        <a class="nav-link" href="/prestamos">
-          <i class="fas fa-fw fa-table"></i>
-          <span style="font-size:larger;">Préstamos</span></a
-        >
-      </li>
+
 
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block" />
