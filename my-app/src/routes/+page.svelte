@@ -37,11 +37,13 @@
       if (username === "admin" && password === "admin") {
         Notiflix.Notify.success("Bienvenido, has iniciado sesión como admin!");
         cambiarUsuario("Admin");
-        esAdmin();
+        esAdmin(1);
         goto("/cartas");
       } else if (comparador && comparador.password == password) {
         Notiflix.Notify.success("Bienvenido, has iniciado sesión como jugador!");
+        cambiarUsuario(comparador.username);
         goto("/cartas");
+        esAdmin(0);
       } else {
         Notiflix.Notify.failure("Usuario o contraseña inválida!");
       }
@@ -53,9 +55,9 @@
       usuario.set(nuevoUsuario);
     }
 
-    function esAdmin(){
+    function esAdmin(x){
 
-      admin.update((n) => n + 1);
+      admin.set(x);
     }
 
   </script>
