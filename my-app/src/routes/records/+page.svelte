@@ -1,5 +1,6 @@
 <script>
   import Notiflix from "notiflix";
+  import { admin, usuario } from "./../../lib/store/Store.js";
   import { db } from "../firebase";
   import { addDoc, collection, onSnapshot } from "firebase/firestore";
   let menu = "Records";
@@ -8,7 +9,9 @@
   let formatos = [];
   let formato = {
     fecha: "",
-  }; //
+  };
+
+  console.log($usuario);
 
   function fechaActual() {
     let fecha = new Date().getFullYear().toString() + "-";
@@ -16,7 +19,7 @@
     if (new Date().getMonth().toString().localeCompare("9") == -1) {
       let mes = parseInt(new Date().getMonth().toString()) + 1;
       fecha += "0" + mes.toString();
-    } else if (new Date().getMonth().toString().localeCompare("9") == -1) {
+    } else if (new Date().getMonth().toString().localeCompare("9") == 1) {
       fecha += "10";
     } else {
       fecha += new Date().getMonth().toString();
@@ -61,7 +64,9 @@
     if (buscarformatos(formatos, fecha) < 0) {
       formato.fecha = fecha;
       await addDoc(collection(db, "formatos"), formato);
-      Notiflix.Notify.success("El formato [" + cambiarMPorY(fecha) + "] fue creado con exito");
+      Notiflix.Notify.success(
+        "El formato [" + cambiarMPorY(fecha) + "] fue creado con exito",
+      );
       cambiarVistaLista();
       fecha = fechaActual();
     } else {
@@ -304,35 +309,39 @@
                                       <ul
                                         class="list-unstyled mb-0 d-flex justify-content-end"
                                       >
-                                        <li>
-                                          <i
-                                            href="#"
-                                            class="text-primary"
-                                            data-toggle="tooltip"
-                                            title=""
-                                            data-original-title="view"
-                                            ><i class="far fa-eye"></i></i
-                                          >
-                                        </li>
-                                        <li>
-                                          <i
-                                            class="text-info"
-                                            data-toggle="tooltip"
-                                            title=""
-                                            data-original-title="Edit"
-                                            ><i class="fas fa-pencil-alt"
-                                            ></i></i
-                                          >
-                                        </li>
-                                        <li>
-                                          <i
-                                            class="text-danger"
-                                            data-toggle="tooltip"
-                                            title=""
-                                            data-original-title="Delete"
-                                            ><i class="far fa-trash-alt"></i></i
-                                          >
-                                        </li>
+                                        {#if $admin == 0}
+                                          <li>
+                                            <i
+                                              href="#"
+                                              class="text-primary"
+                                              data-toggle="tooltip"
+                                              title=""
+                                              data-original-title="view"
+                                              ><i class="far fa-eye"></i></i
+                                            >
+                                          </li>
+                                          <li>
+                                            <i
+                                              class="text-info"
+                                              data-toggle="tooltip"
+                                              title=""
+                                              data-original-title="Edit"
+                                              ><i class="fas fa-pencil-alt"
+                                              ></i></i
+                                            >
+                                          </li>
+                                        {:else}
+                                          <li>
+                                            <i
+                                              class="text-danger"
+                                              data-toggle="tooltip"
+                                              title=""
+                                              data-original-title="Delete"
+                                              ><i class="far fa-trash-alt"
+                                              ></i></i
+                                            >
+                                          </li>
+                                        {/if}
                                       </ul>
                                     </td>
                                   </tr>
@@ -340,22 +349,33 @@
                               {/each}
                             </tbody>
                           </table>
-                          <div class="text-center mt-3 mt-sm-3">
-                            <button
-                              class="btn btn-primary"
-                              on:click={cambiarVistaInsertar}
-                              >Insertar nuevo formato</button
-                            >
-                          </div>
+                          {#if $admin == 1}
+                            <div class="text-center mt-3 mt-sm-3">
+                              <button
+                                class="btn btn-primary"
+                                on:click={cambiarVistaInsertar}
+                                >Insertar nuevo formato</button
+                              >
+                            </div>
+                          {/if}
                         {:else if formatos[0] == null && pagina == 0}
-                          <div class="text-center mt-3 mt-sm-3">
-                            <button
-                              class="btn btn-primary"
-                              on:click={cambiarVistaInsertar}
-                              >Insertar nuevo formato</button
-                            >
-                            <br /><br />
-                          </div>
+                          {#if $admin == 0}
+                            <div class="text-center mt-3 mt-sm-3">
+                              <span class="candidate-list-time order-1"
+                                >No se han encontrado formatos</span
+                              >
+                              <br /><br />
+                            </div>
+                          {:else if $admin == 1}
+                            <div class="text-center mt-3 mt-sm-3">
+                              <button
+                                class="btn btn-primary"
+                                on:click={cambiarVistaInsertar}
+                                >Insertar nuevo formato</button
+                              >
+                              <br /><br />
+                            </div>
+                          {/if}
                         {/if}
                       </div>
                     </div>
@@ -364,6 +384,36 @@
               </div>
             </div>
           {:else if pagina == 1}
+            <div class="container">
+              <button class="btn btn-primary" on:click={cambiarVistaLista}
+                >Regresar</button
+              >
+              <div class="abs-center">
+                <form action="#" class="border p-3 form">
+                  <div class="form-group">
+                    <div class="mb-3">
+                      <label for="calendario"
+                        >Introduzca la fecha del nuevo formato</label
+                      >
+                      <input
+                        type="month"
+                        value={fecha}
+                        class="form-control"
+                        id="calendario"
+                        min="1999-07"
+                        on:change={handle}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    on:click={nuevoFormato}>Insertar</button
+                  >
+                </form>
+              </div>
+            </div>
+          {:else if pagina == 2}
             <div class="container">
               <button class="btn btn-primary" on:click={cambiarVistaLista}
                 >Regresar</button

@@ -1,40 +1,40 @@
 <script>
+  let menu = "Cartas";
+  let cartas = [];
+  async function LoadCards() {
+    const response = await fetch(
+      "https://db.ygoprodeck.com/api/v7/cardinfo.php",
+    );
+    const data = await response.json();
+    cartas = data.data;
+    console.log(data);
+  }
+  LoadCards();
 
-  let menu= "Cartas"
-  let cartas=[];
-    async  function LoadCards(){
-      const response = await fetch("https://db.ygoprodeck.com/api/v7/cardinfo.php")
-      const data = await response.json();
-      cartas= data.data;
-      console.log(data)
-    }
-    LoadCards();
-    
   import Notiflix from "notiflix";
-  import {addDoc,collection,onSnapshot} from 'firebase/firestore'
+  import { addDoc, collection, onSnapshot } from "firebase/firestore";
   import { db } from "../firebase";
   let editStatus = false;
 
-let cartones=[];
-onSnapshot(collection(db,"cartaBiblioteca"),
-(querySnapshot)=>{
- cartones= querySnapshot.docs.map((doc)=>{
-
-    return{...doc.data()};
-  }) 
-  console.log(cartones)
-}
-  ,(err)=>{
-    console.log(err)
-  })
+  let cartones = [];
+  onSnapshot(
+    collection(db, "cartaBiblioteca"),
+    (querySnapshot) => {
+      cartones = querySnapshot.docs.map((doc) => {
+        return { ...doc.data() };
+      });
+      console.log(cartones);
+    },
+    (err) => {
+      console.log(err);
+    },
+  );
 
   let cartasBiblioteca = [
     {
-      
       nombre: "Ash Blossom",
       tipo: "Monstruo",
       cantidad: 3,
-      
     },
     {
       nombre: "Clock Wyvern",
@@ -43,52 +43,51 @@ onSnapshot(collection(db,"cartaBiblioteca"),
     },
   ];
 
-    let cartaBiblioteca=[{
-      
-        nombre: "",
-        tipo: "",
-        prestadas:0,
-        cantidad:0
-      }
-    ]
+  let cartaBiblioteca = [
+    {
+      nombre: "",
+      tipo: "",
+      prestadas: 0,
+      cantidad: 0,
+    },
+  ];
 
-    const createcartaBiblioteca = () => {
-          const newcartaBiblioteca = {
-      
+  const createcartaBiblioteca = () => {
+    const newcartaBiblioteca = {
       nombre: cartasBiblioteca.nombre,
       tipo: cartasBiblioteca.tipo,
       cantidad: cartasBiblioteca.cantidad,
-      prestadas:0
-      
+      prestadas: 0,
     };
 
-    cartaBiblioteca=newcartaBiblioteca;
-    
+    cartaBiblioteca = newcartaBiblioteca;
+
     limpiarFormulario();
     Notiflix.Notify.success("Carta ingresada exitosamente!");
   };
   let foundElement;
   let tipo_carta;
-  
 
-    const onSubmitHadler = async() => {
+  const onSubmitHadler = async () => {
     if (!editStatus) {
-      if(laCartaExisteAPI(cartasBiblioteca.nombre)){
-       cartasBiblioteca.tipo=tipoExiste(cartasBiblioteca.nombre);
-       cartasBiblioteca.cantidad=cantidadCorrecta(cartaBiblioteca.cantidad);
-       if(laCartaExiste(cartasBiblioteca.nombre)){
-        Notiflix.Notify.failure("la carta ya existe dentro de la biblioteca");
-       }else { 
-       
-       if(cantidadCorrecta(cartasBiblioteca.nombre)){
-          createcartaBiblioteca();
-         await addDoc(collection(db,"cartaBiblioteca"),cartaBiblioteca)}
-    }} else{ 
-      if(!laCartaExisteAPI(cartasBiblioteca.nombre)){
-
-        Notiflix.Notify.failure("la carta no existe");}}
-} else {
-      console.log ("h");
+      if (laCartaExisteAPI(cartasBiblioteca.nombre)) {
+        cartasBiblioteca.tipo = tipoExiste(cartasBiblioteca.nombre);
+        cartasBiblioteca.cantidad = cantidadCorrecta(cartaBiblioteca.cantidad);
+        if (laCartaExiste(cartasBiblioteca.nombre)) {
+          Notiflix.Notify.failure("la carta ya existe dentro de la biblioteca");
+        } else {
+          if (cantidadCorrecta(cartasBiblioteca.nombre)) {
+            createcartaBiblioteca();
+            await addDoc(collection(db, "cartaBiblioteca"), cartaBiblioteca);
+          }
+        }
+      } else {
+        if (!laCartaExisteAPI(cartasBiblioteca.nombre)) {
+          Notiflix.Notify.failure("la carta no existe");
+        }
+      }
+    } else {
+      console.log("h");
       updateUser();
     }
     limpiarFormulario();
@@ -98,57 +97,42 @@ onSnapshot(collection(db,"cartaBiblioteca"),
   const limpiarFormulario = () => {
     cartasBiblioteca = {
       nombre: "",
-      tipo:"",
-      cantidad:0,
-      
+      tipo: "",
+      cantidad: 0,
     };
   };
-   
-  function laCartaExisteAPI(nombre){
 
-for (let i = 0; i < cartas.length; i++){
+  function laCartaExisteAPI(nombre) {
+    for (let i = 0; i < cartas.length; i++) {
+      if (cartas[i].name === nombre) return 1;
+    }
+    return 0;
+  }
 
-  if(cartas[i].name===nombre) return 1;
-}
-return 0;
-}
+  function laCartaExiste(nombre) {
+    for (let i = 0; i < cartones.length; i++) {
+      if (cartones[i].nombre === nombre) return 1;
+    }
+    return 0;
+  }
 
-function laCartaExiste(nombre){
-  
+  function tipoExiste(nombre) {
+    for (let i = 0; i < cartas.length; i++) {
+      if (cartas[i].name === nombre) return cartas[i].type;
+    }
+    return "";
+  }
 
-for (let i = 0; i < cartones.length; i++){
+  function cantidadCorrecta() {
+    if (cartasBiblioteca.cantidad > 0 && cartasBiblioteca.cantidad < 27) {
+      return cartasBiblioteca.cantidad;
+    } else {
+      Notiflix.Notify.failure("ha ingresado demasiadas cartas!");
+      return false;
+    }
 
-
-  if(cartones[i].nombre===nombre) return 1;
-}
-return 0;
-}
-
-function tipoExiste(nombre){
-
-for (let i = 0; i < cartas.length; i++){
-
-  if(cartas[i].name===nombre) return cartas[i].type;
-}
-return "";
-}
-
-function cantidadCorrecta(){
-  
-  
-
-
-if(cartasBiblioteca.cantidad>0 && cartasBiblioteca.cantidad <27){
-  return cartasBiblioteca.cantidad;
-}else{
- 
-
-   Notiflix.Notify.failure("ha ingresado demasiadas cartas!");
-  return false;
-}
-
-return false;
-}
+    return false;
+  }
 </script>
 
 <body id="page-top">
@@ -194,7 +178,7 @@ return false;
 
       <!-- Nav Item - Charts -->
       <li class="nav-item">
-        <a class="nav-link" href="/dame">
+        <a class="nav-link" href="/prestamos">
           <i class="fas fa-fw fa-chart-area"></i>
           <span style="font-size:larger;">Prestamos</span></a
         >
@@ -215,8 +199,6 @@ return false;
           <span style="font-size:larger;">Records</span></a
         >
       </li>
-
-
 
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block" />
@@ -284,7 +266,6 @@ return false;
                   </svg>
                   Salir
                 </button>
-                
               </a>
               <!-- logout -->
               <div
@@ -307,7 +288,6 @@ return false;
         </nav>
         <!-- End of Topbar -->
 
-
         <!-- Begin Page Content -->
         <div class="container-fluid">
           <!-- Page Heading -->
@@ -315,98 +295,99 @@ return false;
             class="d-sm-flex align-items-center justify-content-between mb-4"
           >
             <h1 class="h3 mb-0 text-gray-800">{menu}</h1>
-            
           </div>
 
-          <!--  comienzo a trabajar desde aqui   -->  
-          
-                          
-                         
-                          
-           <div class="card mt-2 p-3">
-            
+          <!--  comienzo a trabajar desde aqui   -->
+
+          <div class="card mt-2 p-3">
             <h5 class="ml-2">Introduzca el nombre exacto de la carta</h5>
-                    <div class="card-body p-1">
-                      <form on:submit|preventDefault={onSubmitHadler}>
-                        <div class="form-group">
-                          <input
-                            type="text"
-                            placeholder="Nombre de la carta"
-                            id="username"
-                            bind:value={cartasBiblioteca.nombre}
-                            class="form-control"
-                          />
-                        </div>
-                      
-                        
-                              
-                        <h5>Introduzca la cantidad de copias de la carta (debe ser menor a 27 copias)</h5>    
-                        <div class="form-group">
-                          <input
-                            type="text"
-                            placeholder="Cantidad"
-                            id="password"
-                            bind:value={cartasBiblioteca.cantidad}
-                            class="form-control"
-                          />
-                        </div>
-                       
-                        
-                        <button class="btn btn-primary" id="save">
-                          {#if editStatus}
-                            Modificar
-                          {:else}
-                            Guardar
-                          {/if}
-                        </button>
-                      </form>
-                    </div>
-                  </div>
+            <div class="card-body p-1">
+              <form on:submit|preventDefault={onSubmitHadler}>
+                <div class="form-group">
+                  <input
+                    type="text"
+                    placeholder="Nombre de la carta"
+                    id="username"
+                    bind:value={cartasBiblioteca.nombre}
+                    class="form-control"
+                  />
                 </div>
 
-                <div class="col-md-6">
-                  {#if cartasBiblioteca === 0}
-                    <div class="conatainer" style="text-align: center;">
-                      <div class="row">
-                        <div class="card">
-                          <div class="card-body">
-                            <h2>No hay cartas en el sistema</h2>
+                <h5>
+                  Introduzca la cantidad de copias de la carta (debe ser menor a
+                  27 copias)
+                </h5>
+                <div class="form-group">
+                  <input
+                    type="text"
+                    placeholder="Cantidad"
+                    id="password"
+                    bind:value={cartasBiblioteca.cantidad}
+                    class="form-control"
+                  />
+                </div>
 
-                            <img
-                              src="../../src/assets/img/no_encontrado.png"
-                              alt=""
-                              class="img-fluid mx-auto"
-                              width="200px"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                <button class="btn btn-primary" id="save">
+                  {#if editStatus}
+                    Modificar
+                  {:else}
+                    Guardar
                   {/if}
-                  
-                  <table id="Table" class="table table-striped ml-3 mt-3" style="width:100%" data-toggle="table" data-seach="true" data-searchable="true"
-                  data-pagination="true">
-                    <thead> 
-                      <tr>
-                        <th>Nombre de la carta</th>
-                        <th>Tipo</th>
-                        <th>Cantidad en biblioteca</th>
-                        <th>Cantidad prestadas</th>
-                      </tr>
-                    </thead>
-                    {#each cartones as e}
-                      <tbody>
-                        <tr>
-                          <td>{e.nombre}</td>
-                          <td>{e.tipo}</td>
-                          <td>{e.cantidad}</td>
-                          <td>{e.prestadas}</td>
-                          
-                        </tr>
-                      </tbody>
-                    {/each}
-                  </table>
-                  <!-- 
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          {#if cartasBiblioteca === 0}
+            <div class="conatainer" style="text-align: center;">
+              <div class="row">
+                <div class="card">
+                  <div class="card-body">
+                    <h2>No hay cartas en el sistema</h2>
+
+                    <img
+                      src="../../src/assets/img/no_encontrado.png"
+                      alt=""
+                      class="img-fluid mx-auto"
+                      width="200px"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          {/if}
+
+          <table
+            id="Table"
+            class="table table-striped ml-3 mt-3"
+            style="width:100%"
+            data-toggle="table"
+            data-seach="true"
+            data-searchable="true"
+            data-pagination="true"
+          >
+            <thead>
+              <tr>
+                <th>Nombre de la carta</th>
+                <th>Tipo</th>
+                <th>Cantidad en biblioteca</th>
+                <th>Cantidad prestadas</th>
+              </tr>
+            </thead>
+            {#each cartones as e}
+              <tbody>
+                <tr>
+                  <td>{e.nombre}</td>
+                  <td>{e.tipo}</td>
+                  <td>{e.cantidad}</td>
+                  <td>{e.prestadas}</td>
+                </tr>
+              </tbody>
+            {/each}
+          </table>
+          <!-- 
                   {#each cartones as e }
                     <div class="card mt-2">
                       <div class="row">
@@ -432,13 +413,9 @@ return false;
                       </div>
                     </div>
                   {/each}-->
-                </div>
-              
-            
-            <!------------------------------------------------------------------------------------------------------------->
-          
-        
-        
+        </div>
+
+        <!------------------------------------------------------------------------------------------------------------->
 
         <!-- /.container-fluid -->
       </div>

@@ -1,7 +1,7 @@
-<!-- <a href="/about">About my site</a> -->
 <script>
     import Notiflix from "notiflix";
     import { goto } from "$app/navigation";
+    import { admin, usuario } from "../lib/store/Store.js"
   
     let mensaje = "Por favor introduce tu usuario y contraseña!";
     let username = "";
@@ -36,15 +36,30 @@
       // Aquí puedes agregar la lógica para el inicio de sesión
       if (username === "admin" && password === "admin") {
         Notiflix.Notify.success("Bienvenido, has iniciado sesión como admin!");
+        cambiarUsuario("Admin");
+        esAdmin(1);
         goto("/cartas");
       } else if (comparador && comparador.password == password) {
         Notiflix.Notify.success("Bienvenido, has iniciado sesión como jugador!");
+        cambiarUsuario(comparador.username);
         goto("/cartas");
+        esAdmin(0);
       } else {
         Notiflix.Notify.failure("Usuario o contraseña inválida!");
       }
       
     }
+
+    function cambiarUsuario(nuevoUsuario) {
+
+      usuario.set(nuevoUsuario);
+    }
+
+    function esAdmin(x){
+
+      admin.set(x);
+    }
+
   </script>
   
   <!-- Aquí va el marcado del componente -->
