@@ -2,38 +2,49 @@ export const Carta = class{
 
     constructor(){
 
-        this.nombreCarta = "";
-        this.tipoCarta = "";
-        this.cantidadCarta = 0;
+        this.nombre = "";
+        this.tipo = "";
+        this.cantidad = 0;
+        this.prestadas = 0;
     }
 
-    getNombreCarta(){
+    getNombre(){
 
-        return this.nombreCarta;
+        return this.nombre;
     }
 
-    getTipoCarta(){
+    getTipo(){
 
-        return this.tipoCarta;
+        return this.tipo;
     }
 
-    getCantidadCarta(){
+    getCantidad(){
 
-        return this.cantidadCarta;
+        return this.cantidad;
     }
 
-    setNombreCarta(nombre){
+    getPrestadas(){
 
-        this.nombreCarta = nombre;
+        return this.prestadas;
     }
 
-    setTipoCarta(tipo){
+    setNombre(nombre){
 
-        this.tipoCarta = tipo;
+        this.nombre = nombre;
     }
 
-    setCantidadCarta(cantidad){
+    setTipo(tipo){
 
-        this.cantidadCarta = cantidad;
+        this.tipo = tipo;
+    }
+
+    setCantidad(cantidad){
+
+        this.cantidad = cantidad;
+    }
+    
+    setPrestadas(prestadas){
+
+        this.prestadas = prestadas;
     }
 }
