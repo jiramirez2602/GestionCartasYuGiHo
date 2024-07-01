@@ -1,17 +1,18 @@
 <script>
   import Notiflix from "notiflix";
   import { admin, usuario } from "./../../lib/store/Store.js";
+  import { ListaFormato } from "./../../lib/clases/ListaFormato.js";
+  import { Record } from "./../../lib/clases/Record.js";
   import { db } from "../firebase";
   import { addDoc, collection, onSnapshot } from "firebase/firestore";
-  let menu = "Records";
+
   let pagina = 0;
   let fecha = fechaActual();
-  let formatos = [];
+  let formatos = new ListaFormato();
   let formato = {
     fecha: "",
   };
-
-  console.log($usuario);
+  let lista = [];
 
   function fechaActual() {
     let fecha = new Date().getFullYear().toString() + "-";
@@ -43,16 +44,6 @@
     fecha = fechaActual();
   }
 
-  function buscarformatos(formatos, fecha) {
-    for (let i = 0; i < formatos.length; i++) {
-      if (formatos[i].fecha == fecha) {
-        return i;
-      }
-    }
-
-    return -1;
-  }
-
   function handle(e) {
     const target = e.target;
     if (target.id == "calendario") {
@@ -61,7 +52,8 @@
   }
 
   const nuevoFormato = async () => {
-    if (buscarformatos(formatos, fecha) < 0) {
+    let numero = formatos.buscarformatos(formatos.formatos, fecha);
+    if (numero < 0) {
       formato.fecha = fecha;
       await addDoc(collection(db, "formatos"), formato);
       Notiflix.Notify.success(
@@ -75,10 +67,10 @@
   };
 
   onSnapshot(collection(db, "formatos"), (querySnapshot) => {
-    formatos = querySnapshot.docs.map((doc) => {
+    lista = querySnapshot.docs.map((doc) => {
       return { ...doc.data() };
     });
-    formatos.sort(function (a, b) {
+    lista.sort(function (a, b) {
       if (a.fecha > b.fecha) {
         return -1;
       }
@@ -87,6 +79,7 @@
       }
       return 0;
     });
+    formatos.setFormatos(lista);
   });
 </script>
 
@@ -133,7 +126,7 @@
 
       <!-- Nav Item - Charts -->
       <li class="nav-item">
-        <a class="nav-link" href="/dame">
+        <a class="nav-link" href="/prestamos">
           <i class="fas fa-fw fa-chart-area"></i>
           <span style="font-size:larger;">Prestamos</span></a
         >
@@ -262,7 +255,7 @@
                       <div
                         class="user-dashboard-info-box table-responsive mb-0 bg-white p-4 shadow-sm"
                       >
-                        {#if formatos[0] != null && pagina == 0}
+                        {#if lista[0] && pagina == 0}
                           <table class="table manage-candidates-top mb-0">
                             <thead>
                               <tr>
@@ -272,8 +265,8 @@
                               </tr>
                             </thead>
                             <tbody>
-                              {#each formatos as e, num}
-                                {#if num + 1 <= 6}
+                              {#each formatos.formatos as e, num}
+                                {#if num + 1 <= 6 && $admin == 1}
                                   <tr class="candidates-list">
                                     <td class="title">
                                       <div class="candidate-list-details">
@@ -309,39 +302,74 @@
                                       <ul
                                         class="list-unstyled mb-0 d-flex justify-content-end"
                                       >
-                                        {#if $admin == 0}
-                                          <li>
-                                            <i
-                                              href="#"
-                                              class="text-primary"
-                                              data-toggle="tooltip"
-                                              title=""
-                                              data-original-title="view"
-                                              ><i class="far fa-eye"></i></i
+                                        <li>
+                                          <i
+                                            class="text-danger"
+                                            data-toggle="tooltip"
+                                            title=""
+                                            data-original-title="Delete"
+                                            ><i class="far fa-trash-alt"></i></i
+                                          >
+                                        </li>
+                                      </ul>
+                                    </td>
+                                  </tr>
+                                {:else if num + 1 <= 6 && $admin == 0}
+                                  <tr class="candidates-list">
+                                    <td class="title">
+                                      <div class="candidate-list-details">
+                                        <div class="candidate-list-info">
+                                          <div class="candidate-list-title">
+                                            <span
+                                              class="candidate-list-time order-1"
+                                              >{cambiarMPorY(e.fecha)}</span
                                             >
-                                          </li>
-                                          <li>
-                                            <i
-                                              class="text-info"
-                                              data-toggle="tooltip"
-                                              title=""
-                                              data-original-title="Edit"
-                                              ><i class="fas fa-pencil-alt"
-                                              ></i></i
-                                            >
-                                          </li>
-                                        {:else}
-                                          <li>
-                                            <i
-                                              class="text-danger"
-                                              data-toggle="tooltip"
-                                              title=""
-                                              data-original-title="Delete"
-                                              ><i class="far fa-trash-alt"
-                                              ></i></i
-                                            >
-                                          </li>
-                                        {/if}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td
+                                      class="candidate-list-favourite-time text-center"
+                                    >
+                                      {#if num == 0}
+                                        <i
+                                          class="candidate-list-favourite order-2 text-danger"
+                                        ></i><i class="fas fa-heart"></i>
+                                        <span
+                                          class="candidate-list-time order-1"
+                                          >Actual</span
+                                        >
+                                      {:else}
+                                        <span
+                                          class="candidate-list-time order-1"
+                                          >Legado</span
+                                        >
+                                      {/if}
+                                    </td>
+                                    <td>
+                                      <ul
+                                        class="list-unstyled mb-0 d-flex justify-content-end"
+                                      >
+                                        <li>
+                                          <i
+                                            href="#"
+                                            class="text-primary"
+                                            data-toggle="tooltip"
+                                            title=""
+                                            data-original-title="view"
+                                            ><i class="far fa-eye"></i></i
+                                          >
+                                        </li>
+                                        <li>
+                                          <i
+                                            class="text-info"
+                                            data-toggle="tooltip"
+                                            title=""
+                                            data-original-title="Edit"
+                                            ><i class="fas fa-pencil-alt"
+                                            ></i></i
+                                          >
+                                        </li>
                                       </ul>
                                     </td>
                                   </tr>
@@ -362,7 +390,7 @@
                           {#if $admin == 0}
                             <div class="text-center mt-3 mt-sm-3">
                               <span class="candidate-list-time order-1"
-                                >No se han encontrado formatos</span
+                                >Usted no ha jugado en ningun formato</span
                               >
                               <br /><br />
                             </div>
