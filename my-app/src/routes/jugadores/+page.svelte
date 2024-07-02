@@ -12,7 +12,7 @@
     doc,
     updateDoc,
   } from "firebase/firestore";
-
+  import { ListaUsuario } from "../../lib/clases/ListaUsuario";
   import { onDestroy } from "svelte";
 
   //Variable vacia donde se guardan los usuarios
@@ -40,7 +40,7 @@
     },
     (err) => {
       console.log(err);
-    }
+    },
   );
 
   //Dejar de solicitar actualización al salir de ventana
@@ -56,19 +56,17 @@
     password: "",
   };
 
+  //Crear objeto para controlar usuarios
+  let newListaUsuarios = new ListaUsuario();
+
   //Variable para guardar nombre de usuario a modificar aux
   let usernameToUpdate = "";
 
   //Funcion para crear usuario
   const createUser = async () => {
     try {
-      const newUser = {
-        idKonami: usuario.idKonami,
-        username: usuario.username,
-        password: usuario.password,
-      };
-      //Validar nombre de usuario existente
-      // Expresión regular que verifica letras minúsculas y dígitos (al menos 5 caracteres, maximo 10)
+      /*
+      //Validar ojito
       const regexUsers = /^[a-z0-9]{5,}$/;
       if (users.find((usuario) => usuario.username === newUser.username)) {
         throw new Error("Username ya existe");
@@ -94,14 +92,16 @@
         throw new Error(
           "Contraseña debe tener al menos 5 caracteres y maximo 10"
         );
-      }
-
-      //Enviar a DB si no hay errores
-      await addDoc(collection(db, "users"), newUser); //Conectar a la db y crear data
+      }*/
+      newListaUsuarios.agregarUsuario(
+        usuario.username,
+        usuario.password,
+        usuario.idKonami,
+      );
       limpiarFormulario();
       Notiflix.Notify.success("Usuario creado con exito!");
     } catch (e) {
-      Notiflix.Notify.failure("Usuario no pudo ser creado: " + e.message);
+      Notiflix.Notify.failure("Usuario no pudo ser creado");
     }
   };
 
@@ -117,21 +117,20 @@
   //Actualizar datos en db
   const updateUser = () => {
     try {
-      let updatedUser = {
-        idKonami: usuario.idKonami,
-        username: usuario.username,
-        password: usuario.password,
-      };
-      // console.log(usernameToUpdate + " original");
-      // console.log(updatedUser.username + " nuevo");
-      // console.log();
-      if ((usernameToUpdate != updatedUser.username))  {
-        if (users.find((usuario) => usuario.username === updatedUser.username)) {
-          throw new Error("Username ya existe");
-        }
-      }
+      // if (usernameToUpdate != updatedUser.username) {
+      //   if (
+      //     users.find((usuario) => usuario.username === updatedUser.username)
+      //   ) {
+      //     throw new Error("Username ya existe");
+      //   }
+      // }
 
-      updateDoc(doc(db, "users", usuario.id), updatedUser); //Conectar a la db y enviar data
+      newListaUsuarios.actualizarUsuario(
+        usuario.id,
+        usuario.username,
+        usuario.password,
+        usuario.idKonami,
+      );
       Notiflix.Notify.info("Usuario modificado con exito!");
       users = [];
     } catch (error) {
@@ -142,6 +141,7 @@
   //Funcion para eliminar usuario
   const deleteUser = async (id) => {
     try {
+      newListaUsuarios.eliminarUsuario();
       await deleteDoc(doc(db, "users", id)); //Conectar a la db y enviar data
       Notiflix.Notify.success("Usuario eliminado con exito!");
     } catch (error) {
@@ -235,8 +235,6 @@
         >
       </li>
 
-
-
       <!-- Divider -->
       <hr class="sidebar-divider d-none d-md-block" />
     </ul>
@@ -303,7 +301,6 @@
                   </svg>
                   Salir
                 </button>
-                
               </a>
               <!-- logout -->
               <div
@@ -419,13 +416,12 @@
                           >
                             Eliminar
                           </button>
-                          <!-- TODO: Acomodar esta shit                         <button
+                          <button
                             on:click={() => updateDataToUpdateUser(user)}
                             class="btn btn-secondary"
                           >
                             Modificar
-                          </button>-->
-
+                          </button>
                         </div>
                       </div>
                     </div>

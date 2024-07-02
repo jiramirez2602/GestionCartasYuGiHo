@@ -2,25 +2,30 @@
 
 export const Usuario = class{
 
-    constructor(){
+    constructor(nombre, contraseña, idKonami){
+        this.nombre = nombre;
+        this.contraseña = contraseña;
+        this.idKonami = idKonami;
+    }
 
-        this.nombre = "";
-        this.password = "";
-        this.konamiID = "";
+    getUser(){
+        const newUser = {
+            idKonami: this.idKonami,
+            username: this.nombre,
+            password: this.contraseña,
+          };
+        return newUser
     }
 
     getNombre(){
-
         return this.nombre;
     }
 
-    getPassword(){
-
-        return this.password;
+    getContraseña(){
+        return this.contraseña;
     }
 
     getKonamiID(){
-
         return this.konamiID;
     }
 
@@ -29,13 +34,11 @@ export const Usuario = class{
         this.nombre = nombre;
     }
     
-    setPassword(password){
-
+    setContraseña(password){
         this.password = password;
     }
 
     setKonamiID(id){
-
         this.konamiID = id;
     }
 }
