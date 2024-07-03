@@ -6,15 +6,20 @@ export const Usuario = class{
         this.nombre = nombre;
         this.contraseña = contraseña;
         this.idKonami = idKonami;
+        this.permisos = "";
     }
 
     getUser(){
         const newUser = {
             idKonami: this.idKonami,
             username: this.nombre,
-            password: this.contraseña,
+            password: this.contraseña
           };
         return newUser
+    }
+
+    getPermisos(){
+        return this.permisos;
     }
 
     getNombre(){
@@ -40,5 +45,9 @@ export const Usuario = class{
 
     setKonamiID(id){
         this.konamiID = id;
+    }
+
+    setPermisos(permisos){
+        this.permisos = permisos;
     }
 }

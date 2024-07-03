@@ -42,6 +42,7 @@
       console.log(err);
     },
   );
+  
 
   //Dejar de solicitar actualización al salir de ventana
   onDestroy(onsub);
@@ -49,7 +50,7 @@
   //Variable para editar y crear usuarios
   let editStatus = false;
 
-  //Objeto usuario nuevo
+  //Objeto usuario nuevo para guardar data auxiliar
   let usuario = {
     idKonami: "",
     username: "",
@@ -65,47 +66,11 @@
   //Funcion para crear usuario
   const createUser = async () => {
     try {
-      /*
-      //Validar ojito
-      const regexUsers = /^[a-z0-9]{5,}$/;
-      if (users.find((usuario) => usuario.username === newUser.username)) {
-        throw new Error("Username ya existe");
-      } else if (
-        users.find((usuario) => usuario.idKonami === newUser.idKonami)
-      ) {
-        throw new Error("ID Konami ya existe");
-      } else if (
-        usuario.password == "" ||
-        usuario.username == "" ||
-        usuario.idKonami == ""
-      ) {
-        throw new Error("Debe llenar todos los campos");
-      } else if (usuario.username.length < 5 || usuario.username.length > 10) {
-        throw new Error(
-          "Username debe tener al menos 5 caracteres y maximo 10"
-        );
-      } else if (!regexUsers.test(usuario.username)) {
-        throw new Error(
-          "Username solo puede contener letras minúsculas y dígitos"
-        );
-      } else if (usuario.password.length < 5 || usuario.password.length > 15) {
-        throw new Error(
-          "Contraseña debe tener al menos 5 caracteres y maximo 10"
-        );
-      }*/
-      newListaUsuarios.agregarUsuario(
-        usuario.username,
-        usuario.password,
-        usuario.idKonami,
-      );
-      limpiarFormulario();
-      Notiflix.Notify.success("Usuario creado con exito!");
+      await newListaUsuarios.agregarUsuario(usuario.username, usuario.password, usuario.idKonami, users);
     } catch (e) {
       Notiflix.Notify.failure("Usuario no pudo ser creado");
     }
   };
-
-  /*  Funciones para actualizar usuario */
 
   //Actualizar datos en formulario
   const updateDataToUpdateUser = (usuarioEdited) => {
@@ -117,21 +82,12 @@
   //Actualizar datos en db
   const updateUser = () => {
     try {
-      // if (usernameToUpdate != updatedUser.username) {
-      //   if (
-      //     users.find((usuario) => usuario.username === updatedUser.username)
-      //   ) {
-      //     throw new Error("Username ya existe");
-      //   }
-      // }
-
       newListaUsuarios.actualizarUsuario(
         usuario.id,
         usuario.username,
         usuario.password,
-        usuario.idKonami,
+        usuario.idKonami, users
       );
-      Notiflix.Notify.info("Usuario modificado con exito!");
       users = [];
     } catch (error) {
       Notiflix.Notify.failure("Usuario no pudo ser modificado: " + error);
@@ -141,9 +97,9 @@
   //Funcion para eliminar usuario
   const deleteUser = async (id) => {
     try {
-      newListaUsuarios.eliminarUsuario();
-      await deleteDoc(doc(db, "users", id)); //Conectar a la db y enviar data
-      Notiflix.Notify.success("Usuario eliminado con exito!");
+      newListaUsuarios.eliminarUsuario(id);
+      limpiarFormulario();
+      editStatus = false;
     } catch (error) {
       Notiflix.Notify.failure("Usuario no pudo ser eliminado" + error);
     }
@@ -156,7 +112,7 @@
     } else {
       updateUser();
     }
-    //limpiarFormulario();
+    limpiarFormulario();
     editStatus = false;
   };
 
