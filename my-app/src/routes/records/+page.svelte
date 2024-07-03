@@ -1,7 +1,8 @@
 <script>
   import Notiflix from "notiflix";
-  import { admin, usuario } from "./../../lib/store/Store.js";
+  import { admin, usuario, formatoActual } from "./../../lib/store/Store.js";
   import { ListaFormato } from "./../../lib/clases/ListaFormato.js";
+  import { ListaRecord } from "./../../lib/clases/ListaRecord.js";
   import { Record } from "./../../lib/clases/Record.js";
   import { db } from "../firebase";
   import { addDoc, collection, onSnapshot } from "firebase/firestore";
@@ -13,6 +14,12 @@
     fecha: "",
   };
   let lista = [];
+  let listaRecord = new ListaRecord();
+
+  Notiflix.Confirm.init({
+    okButtonBackground: "#F25B2C",
+    titleColor: "#F25B2C",
+  });
 
   function fechaActual() {
     let fecha = new Date().getFullYear().toString() + "-";
@@ -39,6 +46,10 @@
     pagina = 1;
   }
 
+  function cambiarVistaInsertarRecord() {
+    pagina = 2;
+  }
+
   function cambiarVistaLista() {
     pagina = 0;
     fecha = fechaActual();
@@ -48,6 +59,29 @@
     const target = e.target;
     if (target.id == "calendario") {
       fecha = target.value;
+    } else if (
+      target.id == "botonVictoria" ||
+      target.id == "botonDerrota" ||
+      target.id == "botonEmpate"
+    ) {
+
+      let indice = listaRecord.buscarRecordUsuario($formatoActual,$usuario);
+
+      if ($usuario == "")
+        Notiflix.Notify.info("Debe iniciar sesion para usar esta opcion");
+      else if (listaRecord.records[indice] == null) {
+        let record = new Record();
+        record.setUsuario($usuario);
+
+        if (target.id == "botonVictoria") record.setGanadas(1);
+        else if (target.id == "botonDerrota") record.setPerdidas(1);
+        else if (target.id == "botonEmpate") record.setEmpatadas(1);
+
+        record.setFormato($formatoActual);
+
+        listaRecord.insertarRecord(record);
+      }
+
     }
   }
 
@@ -80,7 +114,29 @@
       return 0;
     });
     formatos.setFormatos(lista);
+    cambiarFormato(formatos.formatos[0].fecha);
   });
+
+  function notifi() {
+    Notiflix.Confirm.prompt(
+      "Hello",
+      "How are you feeling?",
+      "",
+      "Answer",
+      "Cancel",
+      (clientAnswer) => {
+        alert("Client answer is: " + clientAnswer);
+      },
+      (clientAnswer) => {
+        alert("Client answer was: " + clientAnswer);
+      },
+      {},
+    );
+  }
+
+  function cambiarFormato(x) {
+    formatoActual.set(x);
+  }
 </script>
 
 <body id="page-top">
@@ -385,6 +441,14 @@
                                 >Insertar nuevo formato</button
                               >
                             </div>
+                          {:else if $admin == 0}
+                            <div class="text-center mt-3 mt-sm-3">
+                              <button
+                                class="btn btn-primary"
+                                on:click={cambiarVistaInsertarRecord}
+                                >Insertar nuevo record</button
+                              >
+                            </div>
                           {/if}
                         {:else if formatos[0] == null && pagina == 0}
                           {#if $admin == 0}
@@ -447,26 +511,20 @@
                 >Regresar</button
               >
               <div class="abs-center">
-                <form action="#" class="border p-3 form">
-                  <div class="form-group">
-                    <div class="mb-3">
-                      <label for="calendario"
-                        >Introduzca la fecha del nuevo formato</label
-                      >
-                      <input
-                        type="month"
-                        value={fecha}
-                        class="form-control"
-                        id="calendario"
-                        min="1999-07"
-                        on:change={handle}
-                      />
-                    </div>
-                  </div>
+                <form id="botones" action="#" class="border p-3 form">
                   <button
+                    id="botonVictoria"
                     type="submit"
                     class="btn btn-primary"
-                    on:click={nuevoFormato}>Insertar</button
+                    on:click={handle}>Victoria</button
+                  >
+                  <button
+                    id="botonDerrota"
+                    type="submit"
+                    class="btn btn-primary">Derrota</button
+                  >
+                  <button id="botonEmpate" type="submit" class="btn btn-primary"
+                    >Empate</button
                   >
                 </form>
               </div>
@@ -589,5 +647,9 @@
 
   .form {
     width: 450px;
+  }
+
+  #botones {
+    text-align: center;
   }
 </style>
