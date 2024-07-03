@@ -1,6 +1,11 @@
 <script>
   import Notiflix from "notiflix";
-  //Importaciones para db
+  import { ListaPrestamos } from "./../../lib/clases/ListaPrestamo.js";
+  import { Prestamo } from "./../../lib/clases/Prestamo.js";
+  import { admin, usuario } from "./../../lib/store/Store.js";
+  import { onDestroy } from "svelte";
+  import { Usuario } from "../../lib/clases/Usuario.js";
+  import { Carta } from "../../lib/clases/Carta.js";
   import { db } from "../firebase";
   import {
     addDoc,
@@ -12,17 +17,21 @@
     QuerySnapshot,
   } from "firebase/firestore";
 
-  import { onDestroy } from "svelte";
-
   let menu = "Prestamo de cartas";
   let cartas = [];
   let loans = [];
   let vista = 0;
+  let nuevoPrestamo = new Prestamo();
+  let ListaPrestamo = new ListaPrestamos();
 
-  function handle(e){
+  /*Notiflix.Confirm.init({
+    okButtonBackground: "#F25B2C",
+    titleColor: "#F25B2C",
+  });*/
 
+  function handle(e) {
     let a = e.target.parentNode.children[0].id;
-    let b = e.target.parentNode.children[1].id; 
+    let b = e.target.parentNode.children[1].id;
 
     const btna = document.getElementById(a);
     const btnb = document.getElementById(b);
@@ -49,56 +58,86 @@
       loans = QuerySnapshot.docs.map((doc) => {
         return { ...doc.data(), id: doc.id };
       });
+      ListaPrestamo = new ListaPrestamos();
+      loans.forEach((loans) => {
+        nuevoPrestamo = new Prestamo();
+        nuevoPrestamo.setUsuario(loans.usuario);
+        nuevoPrestamo.setCarta(loans.nombrecarta);
+        nuevoPrestamo.setEstado(loans.estado);
+        nuevoPrestamo.setFecha(loans.fecha);
+        nuevoPrestamo.setCantidad(loans.cantidad);
+        ListaPrestamo.insertarPrestamo(nuevoPrestamo);
+      });
+      console.log(ListaPrestamo);
+      console.log(loans);
     },
     (err) => {
       console.log(err);
     }
   );
 
-  async function pedirPrestamo(ID) {
-    let cantidad = prompt(
-      "Por favor, ingresa la cantidad de préstamos (1, 2 o 3)",
-      "1"
-    );
-    try {
-      const nuevoPrestamo = {
-        nombrecarta: cartas.find((carta) => carta.id === ID).nombre,
-        cantidad: cantidad,
-        cartaID: ID,
-        usuario: "admin",
-        fecha: new Date().toLocaleDateString(),
-        estado: "Pendiente",
-      };
-      let total = parseInt(cartas.find((carta) => carta.id === ID).prestadas) + parseInt(cantidad)
-      if (cantidad > cartas.find((carta) => carta.id === ID).cantidad) {
-        throw new Error("No hay suficientes cartas en la biblioteca");
-      } else if (cantidad < 1 || cantidad > 3) {
-        throw new Error("Cantidad no válida");
-      }else if( total > parseInt(cartas.find((carta) => carta.id === ID).cantidad)){
-        throw new Error("No hay suficientes cartas en la biblioteca");
-      }
-      await addDoc(collection(db, "loans"), nuevoPrestamo);
-      Notiflix.Notify.success("Solicitud de préstamo enviada");
-    } catch (e) {
-      Notiflix.Notify.failure(
-        "Solicitud de préstamo cancelada por " + e.message
+  function notifi() {
+    return new Promise((resolve, reject) => {
+      Notiflix.Confirm.prompt(
+        "Hola",
+        "Por favor, ingresa la cantidad de préstamos (1, 2 o 3)",
+        "",
+        "Pedir prestamo",
+        "Cancel",
+        (clientAnswer) => {
+          try {
+            const cantidad = parseInt(clientAnswer);
+            resolve(cantidad); // Resuelve la promesa con la cantidad
+          } catch (e) {
+            Notiflix.Notify.failure("Cantidad Invalida");
+            reject(new Error("Cantidad Invalida")); // Rechaza la promesa
+          }
+        },
+        () => {
+          Notiflix.Notify.failure("Solicitud de préstamo cancelada");
+          reject(new Error("Solicitud de préstamo cancelada")); // Rechaza la promesa
+        },
+        {}
       );
+    });
+  }
+
+  async function pedirPrestamo(ID) {
+    let cantidad =  await notifi();
+    if (cantidad == -1) {
+      return;
+    } else {
+      try {
+        let total =
+          parseInt(cartas.find((carta) => carta.id === ID).prestadas) +
+          parseInt(cantidad);
+        if (cantidad > cartas.find((carta) => carta.id === ID).cantidad) {
+          throw new Error("No hay suficientes cartas en la biblioteca");
+        } else if (parseInt(cantidad) < 1 || parseInt(cantidad) > 3) {
+          throw new Error("Cantidad no válida");
+        } else if (
+          total > parseInt(cartas.find((carta) => carta.id === ID).cantidad)
+        ) {
+          throw new Error("No hay suficientes cartas en la biblioteca");
+        }
+        nuevoPrestamo.setUsuario($usuario);
+        nuevoPrestamo.setCarta(cartas.find((carta) => carta.id === ID).nombre);
+        nuevoPrestamo.setEstado(0);
+        nuevoPrestamo.setFecha(new Date().toLocaleString());
+        nuevoPrestamo.setCantidad(parseInt(cantidad));
+        await addDoc(collection(db, "loans"), nuevoPrestamo.getprestamo());
+        ListaPrestamo.insertarPrestamo(nuevoPrestamo);
+        Notiflix.Notify.success("Solicitud de préstamo enviada");
+      } catch (e) {
+        Notiflix.Notify.failure(
+          "Solicitud de préstamo cancelada por " + e.message
+        );
+      }
     }
   }
 
   onDestroy(onsub);
   onDestroy(onsub1);
-
-  function AcepRech(ID, estado, prestadoa, cartaID) {
-    updateDoc(doc(db, "loans", ID), {
-      estado: estado,
-    });
-    let total = (parseInt(prestadoa)+ parseInt(cartas.find((carta) => carta.id === cartaID).prestadas));
-    updateDoc(doc(db, "cartaBiblioteca", cartaID), {
-      prestadas: total,
-    });
-    
-  }
 
   function cambiarvista(x) {
     if (x == 0) {
@@ -107,6 +146,7 @@
       vista = 1;
     }
   }
+
 </script>
 
 <body id="page-top">
@@ -270,9 +310,14 @@
           >
             <h1 class="h3 mb-0 text-gray-800">{menu}</h1>
           </div>
-          <button class="btn btn-primary" on:click={() => cambiarvista(0)}>Pedir Prestamo</button>
-          <button class="btn btn-primary" on:click={() => cambiarvista(1)}>Administrar Prestamos</button
+          <button class="btn btn-primary" on:click={() => cambiarvista(0)}
+            >Pedir Prestamo</button
           >
+          <button class="btn btn-primary" on:click={() => cambiarvista(1)}
+            >Administrar Prestamos</button
+          >
+          <button class="btn btn-primary" on:click={() => cambiarvista(2)}
+            >Historial de prestamos</button>
         </div>
         <!-- /.container-fluid -->
         {#if vista == 0}
@@ -302,7 +347,9 @@
                   <td>{carta.cantidad}</td>
                   <td>{carta.id}</td>
                   <td>
-                    <button class="btn btn-primary m-1 p-0" on:click={() => pedirPrestamo(carta.id)}
+                    <button
+                      class="btn btn-primary m-1 p-0"
+                      on:click={() => pedirPrestamo(carta.id)}
                       >Pedir prestamo</button
                     >
                   </td>
@@ -325,30 +372,53 @@
               <tr>
                 <th>Nombre de la carta</th>
                 <th>Cantidad a prestamo</th>
-                <th>ID de la carta</th>
                 <th>Fecha de la solicitud</th>
                 <th>Estado</th>
                 <th>Usuario</th>
                 <th>Aceptar/Rechazar</th>
               </tr>
             </thead>
-            {#each loans as loan, num (loan.id)}
+            {#each ListaPrestamo.listaPres as e, num}
               <tbody>
                 <tr>
-                  <td>{loan.nombrecarta}</td>
-                  <td>{loan.cantidad}</td>
-                  <td>{loan.cartaID}</td>
-                  <td>{loan.fecha}</td>
-                  <td>{loan.estado}</td>
-                  <td>{loan.usuario}</td>
+                  <td>{e.carta}</td>
+                  <td>{e.cantidad}</td>
+                  <td>{e.fecha}</td>
+                  {#if e.estado == 0}
+                    <td>En espera</td>
+                  {:else if e.estado == 1}
+                    <td>Aceptado</td>
+                  {:else}
+                    <td>Rechazado</td>
+                  {/if}
+                  <td>{e.usuario}</td>
                   <td>
-                    <button id = {"btna"+num} on:click={handle} on:click={() => AcepRech(loan.id, "Aceptado", loan.cantidad, loan.cartaID)}
-                      >Aceptar</button
+                    <button
+                      id={"btna" + num}
+                      on:click={handle}
+                      on:click={ListaPrestamo.cambiarEstadoPrestamo(
+                        loans,
+                        cartas,
+                        1,
+                        num,
+                        db,
+                        e.cantidad
+                      )}>Aceptar</button
                     >
-                    <button id = {"btnb"+num} on:click={handle} on:click={() => AcepRech(loan.id, "Rechazado", loan.cantidad, loan.cartaID)}
-                      >Rechazar</button
+                    <button
+                      id={"btnb" + num}
+                      on:click={handle}
+                      on:click={ListaPrestamo.cambiarEstadoPrestamo(
+                        loans,
+                        cartas,
+                        2,
+                        num,
+                        db,
+                        e.cantidad
+                      )}>Rechazar</button
                     >
-                </tr>
+                  </td></tr
+                >
               </tbody>
             {/each}
           </table>
