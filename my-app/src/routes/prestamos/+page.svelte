@@ -21,6 +21,8 @@
   let menu = "Prestamo de cartas";
   let cartas = [];
   let loans = [];
+  let users = [];
+  let userselec = [];
   let vista = 0;
   let historia = 0;
   let nuevoPrestamo = new Prestamo();
@@ -43,6 +45,19 @@
       cartas = QuerySnapshot.docs.map((doc) => {
         return { ...doc.data(), id: doc.id };
       });
+    },
+    (err) => {
+      console.log(err);
+    }
+  );
+
+  const onsub2 = onSnapshot(
+    collection(db, "users"),
+    (querySnapshot) => {
+      users = querySnapshot.docs.map((docs) => {
+        return { ...docs.data(), id: docs.id };
+      });
+      console.log(users);
     },
     (err) => {
       console.log(err);
@@ -72,6 +87,17 @@
       console.log(err);
     }
   );
+
+  function cambiarSeleccion(event) {
+    let seleccionado = event.target.value;
+    userselec = [];
+    loans.forEach((e) => {
+      if (e.usuario == seleccionado) {
+        userselec.push(e);
+      }
+      console.log(userselec);
+    });
+  }
 
   function notifi() {
     return new Promise((resolve, reject) => {
@@ -135,7 +161,7 @@
         await addDoc(collection(db, "loans"), np);
         console.log(ListaPrestamo.listaPres);
         Notiflix.Notify.success("Solicitud de préstamo enviada");
-        } catch (e) {
+      } catch (e) {
         Notiflix.Notify.failure(
           "Solicitud de préstamo cancelada por " + e.message
         );
@@ -145,6 +171,7 @@
 
   onDestroy(onsub);
   onDestroy(onsub1);
+  onDestroy(onsub2);
 
   function cambiarvista(x) {
     if (x == 0) {
@@ -165,6 +192,8 @@
       historia = 2;
     } else if (y == 3) {
       historia = 3;
+    } else if (y == 4) {
+      historia = 4;
     }
   }
 </script>
@@ -459,6 +488,9 @@
           <button class="btn btn-primary" on:click={() => historial(3)}
             >Pendiente</button
           >
+          <button class="btn btn-primary" on:click={() => historial(4)}
+            >Historial por Usuario</button
+          >
         {/if}
         <p></p>
         {#if historia == 0 && vista == 2}
@@ -598,6 +630,51 @@
                   </tr>
                 </tbody>
               {/if}
+            {/each}
+          </table>
+        {/if}
+        {#if historia == 4 && vista == 2}
+          <select on:change={cambiarSeleccion}>
+            <option value="">Seleccione un usuario a consultar...</option>
+            {#each users as user}
+              <option value={user.username}>{user.username}</option>
+            {/each}
+          </select>
+          <p></p>
+          <table
+            id="Table"
+            class="table table-striped"
+            style="width:100%"
+            data-toggle="table"
+            data-seach="true"
+            data-searchable="true"
+            data-pagination="true"
+          >
+            <thead>
+              <tr>
+                <th>Nombre de la carta</th>
+                <th>Cantidad a prestamo</th>
+                <th>Fecha de la solicitud</th>
+                <th>Estado</th>
+                <th>Usuario</th>
+              </tr>
+            </thead>
+            {#each userselec as e}
+              <tbody>
+                <tr>
+                  <td>{e.carta}</td>
+                  <td>{e.cantidad}</td>
+                  <td>{e.fecha}</td>
+                  {#if e.estado == 0}
+                    <td>En espera</td>
+                  {:else if e.estado == 1}
+                    <td>Aceptado</td>
+                  {:else}
+                    <td>Rechazado</td>
+                  {/if}
+                  <td>{e.usuario}</td>
+                </tr>
+              </tbody>
             {/each}
           </table>
         {/if}
