@@ -9,6 +9,20 @@ export const Record = class{
         this.empatadas = 0;
     }
 
+    getRecord(){
+
+        let record = {
+            
+            usuario : this.usuario,
+            formato : this.formato,
+            ganadas : this.ganadas,
+            perdidas : this.perdidas,
+            empatadas : this.empatadas,
+        }
+
+        return record;
+    }
+
     getUsuario(){
 
         return this.usuario;

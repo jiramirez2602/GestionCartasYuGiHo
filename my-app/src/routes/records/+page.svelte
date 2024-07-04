@@ -8,17 +8,28 @@
   import { addDoc, collection, onSnapshot } from "firebase/firestore";
 
   let pagina = 0;
+  let indice = 0;
   let fecha = fechaActual();
   let formatos = new ListaFormato();
   let formato = {
     fecha: "",
   };
-  let lista = [];
+  let listaF = [];
+  let listaR = [];
   let listaRecord = new ListaRecord();
+  let listaRecordUsuario = [];
 
-  Notiflix.Confirm.init({
-    okButtonBackground: "#F25B2C",
-    titleColor: "#F25B2C",
+  Notiflix.Report.init({
+    plainText: false,
+    backOverlayColor: "#F25B2C",
+    success: {
+      svgColor: "#F25B2C",
+      titleColor: "#1e1e1e",
+      messageColor: "#242424",
+      buttonBackground: "#F25B2C",
+      buttonColor: "#fff",
+      backOverlayColor: "rgba(242,91,44,0.2)",
+    },
   });
 
   function fechaActual() {
@@ -34,12 +45,6 @@
     }
 
     return fecha;
-  }
-
-  function cambiarMPorY(input) {
-    input = input.slice(5, input.length) + "-" + input.slice(0, 4);
-
-    return input;
   }
 
   function cambiarVistaInsertar() {
@@ -64,12 +69,11 @@
       target.id == "botonDerrota" ||
       target.id == "botonEmpate"
     ) {
-
-      let indice = listaRecord.buscarRecordUsuario($formatoActual,$usuario);
+      indice = listaRecord.buscarRecordUsuario($formatoActual, $usuario);
 
       if ($usuario == "")
         Notiflix.Notify.info("Debe iniciar sesion para usar esta opcion");
-      else if (listaRecord.records[indice] == null) {
+      else if (listaRecord.records[0] == null || indice == -1) {
         let record = new Record();
         record.setUsuario($usuario);
 
@@ -79,9 +83,20 @@
 
         record.setFormato($formatoActual);
 
-        listaRecord.insertarRecord(record);
+        listaRecord.insertarRecord(record, db);
+        Notiflix.Notify.success(
+          "Se a actualizado su record en el formato [" +
+            formatos.cambiarMPorY(fecha) +
+            "]",
+        );
+      } else if (indice >= 0) {
+        if (target.id == "botonVictoria")
+          listaRecord.agregarVictoria(indice, db, listaR[indice].id);
+        else if (target.id == "botonDerrota")
+          listaRecord.agregarDerrota(indice, db, listaR[indice].id);
+        else if (target.id == "botonEmpate")
+          listaRecord.agregarEmpate(indice, db, listaR[indice].id);
       }
-
     }
   }
 
@@ -91,7 +106,9 @@
       formato.fecha = fecha;
       await addDoc(collection(db, "formatos"), formato);
       Notiflix.Notify.success(
-        "El formato [" + cambiarMPorY(fecha) + "] fue creado con exito",
+        "El formato [" +
+          formatos.cambiarMPorY(fecha) +
+          "] fue creado con exito",
       );
       cambiarVistaLista();
       fecha = fechaActual();
@@ -101,10 +118,10 @@
   };
 
   onSnapshot(collection(db, "formatos"), (querySnapshot) => {
-    lista = querySnapshot.docs.map((doc) => {
-      return { ...doc.data() };
+    listaF = querySnapshot.docs.map((doc) => {
+      return { ...doc.data(), id: doc.id };
     });
-    lista.sort(function (a, b) {
+    listaF.sort(function (a, b) {
       if (a.fecha > b.fecha) {
         return -1;
       }
@@ -113,30 +130,65 @@
       }
       return 0;
     });
-    formatos.setFormatos(lista);
-    cambiarFormato(formatos.formatos[0].fecha);
+    formatos.setFormatos(listaF);
+    cambiarFormato(formatos.formatos[0]);
+    console.log(formatos.formatos,"pepe");
   });
 
-  function notifi() {
-    Notiflix.Confirm.prompt(
-      "Hello",
-      "How are you feeling?",
-      "",
-      "Answer",
-      "Cancel",
-      (clientAnswer) => {
-        alert("Client answer is: " + clientAnswer);
-      },
-      (clientAnswer) => {
-        alert("Client answer was: " + clientAnswer);
-      },
-      {},
-    );
-  }
+  onSnapshot(collection(db, "records"), (querySnapshot) => {
+    let record = new Record();
+
+    listaR = querySnapshot.docs.map((doc) => {
+      record.setUsuario(doc.data().usuario);
+      record.setFormato(doc.data().formato);
+      record.setGanadas(doc.data().ganadas);
+      record.setPerdidas(doc.data().perdidas);
+      record.setEmpatadas(doc.data().empatadas);
+
+      return { record: record, id: doc.id };
+    });
+
+    listaR.sort(function (a, b) {
+      if (a.record.formato > b.record.formato) {
+        return -1;
+      }
+      if (a.record.formato < b.record.formato) {
+        return 1;
+      }
+      return 0;
+    });
+
+    listaRecord.setRecords(listaR);
+    listaRecordUsuario = listaRecord.getRecordsUsuario($usuario);
+    console.log(listaRecordUsuario);
+  });
 
   function cambiarFormato(x) {
     formatoActual.set(x);
   }
+
+  function consultarRecord(e) {
+    let partidasTotales = e.ganadas + e.perdidas + e.empatadas;
+    let porcentaje = (e.ganadas / partidasTotales) * 100;
+    Notiflix.Report.success(
+      "Tu Record",
+      "Partidas totales: " +
+        partidasTotales +
+        "<br>Porcentaje de victoria: " +
+        porcentaje +
+        "%" +
+        "<br>Ganadas: " +
+        e.ganadas +
+        "<br>Perdidas: " +
+        e.perdidas +
+        "<br>Empatadas: " +
+        e.empatadas,
+      "Ok",
+    );
+  }
+
+
+
 </script>
 
 <body id="page-top">
@@ -311,7 +363,7 @@
                       <div
                         class="user-dashboard-info-box table-responsive mb-0 bg-white p-4 shadow-sm"
                       >
-                        {#if lista[0] && pagina == 0}
+                        {#if listaF[0] != null && pagina == 0 && $admin == 1}
                           <table class="table manage-candidates-top mb-0">
                             <thead>
                               <tr>
@@ -321,8 +373,8 @@
                               </tr>
                             </thead>
                             <tbody>
-                              {#each formatos.formatos as e, num}
-                                {#if num + 1 <= 6 && $admin == 1}
+                              {#each listaF as e, num}
+                                {#if num + 1 <= 6}
                                   <tr class="candidates-list">
                                     <td class="title">
                                       <div class="candidate-list-details">
@@ -330,7 +382,7 @@
                                           <div class="candidate-list-title">
                                             <span
                                               class="candidate-list-time order-1"
-                                              >{cambiarMPorY(e.fecha)}</span
+                                              >{formatos.cambiarMPorY(e.fecha)}</span
                                             >
                                           </div>
                                         </div>
@@ -358,74 +410,18 @@
                                       <ul
                                         class="list-unstyled mb-0 d-flex justify-content-end"
                                       >
-                                        <li>
-                                          <i
-                                            class="text-danger"
-                                            data-toggle="tooltip"
-                                            title=""
-                                            data-original-title="Delete"
-                                            ><i class="far fa-trash-alt"></i></i
-                                          >
-                                        </li>
-                                      </ul>
-                                    </td>
-                                  </tr>
-                                {:else if num + 1 <= 6 && $admin == 0}
-                                  <tr class="candidates-list">
-                                    <td class="title">
-                                      <div class="candidate-list-details">
-                                        <div class="candidate-list-info">
-                                          <div class="candidate-list-title">
-                                            <span
-                                              class="candidate-list-time order-1"
-                                              >{cambiarMPorY(e.fecha)}</span
+                                        <button on:click={formatos.eliminarFormato(db, listaF[num].id)}
+                                          ><li>
+                                            <i
+                                              class="text-danger"
+                                              data-toggle="tooltip"
+                                              title=""
+                                              data-original-title="Delete"
+                                              ><i class="far fa-trash-alt"
+                                              ></i></i
                                             >
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </td>
-                                    <td
-                                      class="candidate-list-favourite-time text-center"
-                                    >
-                                      {#if num == 0}
-                                        <i
-                                          class="candidate-list-favourite order-2 text-danger"
-                                        ></i><i class="fas fa-heart"></i>
-                                        <span
-                                          class="candidate-list-time order-1"
-                                          >Actual</span
+                                          </li></button
                                         >
-                                      {:else}
-                                        <span
-                                          class="candidate-list-time order-1"
-                                          >Legado</span
-                                        >
-                                      {/if}
-                                    </td>
-                                    <td>
-                                      <ul
-                                        class="list-unstyled mb-0 d-flex justify-content-end"
-                                      >
-                                        <li>
-                                          <i
-                                            href="#"
-                                            class="text-primary"
-                                            data-toggle="tooltip"
-                                            title=""
-                                            data-original-title="view"
-                                            ><i class="far fa-eye"></i></i
-                                          >
-                                        </li>
-                                        <li>
-                                          <i
-                                            class="text-info"
-                                            data-toggle="tooltip"
-                                            title=""
-                                            data-original-title="Edit"
-                                            ><i class="fas fa-pencil-alt"
-                                            ></i></i
-                                          >
-                                        </li>
                                       </ul>
                                     </td>
                                   </tr>
@@ -433,41 +429,117 @@
                               {/each}
                             </tbody>
                           </table>
-                          {#if $admin == 1}
-                            <div class="text-center mt-3 mt-sm-3">
-                              <button
-                                class="btn btn-primary"
-                                on:click={cambiarVistaInsertar}
-                                >Insertar nuevo formato</button
-                              >
-                            </div>
-                          {:else if $admin == 0}
-                            <div class="text-center mt-3 mt-sm-3">
-                              <button
-                                class="btn btn-primary"
-                                on:click={cambiarVistaInsertarRecord}
-                                >Insertar nuevo record</button
-                              >
-                            </div>
-                          {/if}
-                        {:else if formatos[0] == null && pagina == 0}
-                          {#if $admin == 0}
-                            <div class="text-center mt-3 mt-sm-3">
-                              <span class="candidate-list-time order-1"
-                                >Usted no ha jugado en ningun formato</span
-                              >
-                              <br /><br />
-                            </div>
-                          {:else if $admin == 1}
-                            <div class="text-center mt-3 mt-sm-3">
-                              <button
-                                class="btn btn-primary"
-                                on:click={cambiarVistaInsertar}
-                                >Insertar nuevo formato</button
-                              >
-                              <br /><br />
-                            </div>
-                          {/if}
+                          <div class="text-center mt-3 mt-sm-3">
+                            <button
+                              class="btn btn-primary"
+                              on:click={cambiarVistaInsertar}
+                              >Insertar nuevo formato</button
+                            >
+                          </div>
+                        {:else if formatos[0] == null && pagina == 0 && $admin == 1}
+                          <div class="text-center mt-3 mt-sm-3">
+                            <button
+                              class="btn btn-primary"
+                              on:click={cambiarVistaInsertar}
+                              >Insertar nuevo formato</button
+                            >
+                            <br /><br />
+                          </div>
+                        {/if}
+                        {#if listaR[0] && pagina == 0 && admin == 0}
+                          <table class="table manage-candidates-top mb-0">
+                            <thead>
+                              <tr>
+                                <th>formato</th>
+                                <th class="text-center">Estado</th>
+                                <th class="action text-right">Acciones</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {#each listaRecordUsuario as e, num}
+                                {#if num + 1 <= 6}
+                                  <tr class="candidates-list">
+                                    <td class="title">
+                                      <div class="candidate-list-details">
+                                        <div class="candidate-list-info">
+                                          <div class="candidate-list-title">
+                                            <span
+                                              class="candidate-list-time order-1"
+                                              >{formatos.cambiarMPorY(
+                                                e.formato,
+                                              )}</span
+                                            >
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td
+                                      class="candidate-list-favourite-time text-center"
+                                    >
+                                      {#if num == 0}
+                                        <i
+                                          class="candidate-list-favourite order-2 text-danger"
+                                        ></i><i class="fas fa-heart"></i>
+                                        <span
+                                          class="candidate-list-time order-1"
+                                          >Ultimo</span
+                                        >
+                                      {:else}
+                                        <span
+                                          class="candidate-list-time order-1"
+                                          >Legado</span
+                                        >
+                                      {/if}
+                                    </td>
+                                    <td>
+                                      <ul
+                                        class="list-unstyled mb-0 d-flex justify-content-end"
+                                      >
+                                        <button on:click={consultarRecord(e)}
+                                          ><li>
+                                            <i
+                                              href="#"
+                                              class="text-primary"
+                                              data-toggle="tooltip"
+                                              title=""
+                                              data-original-title="view"
+                                              ><i class="far fa-eye"></i></i
+                                            >
+                                          </li></button
+                                        >
+                                        <button
+                                          ><li>
+                                            <i
+                                              class="text-info"
+                                              data-toggle="tooltip"
+                                              title=""
+                                              data-original-title="Edit"
+                                              ><i class="fas fa-pencil-alt"
+                                              ></i></i
+                                            >
+                                          </li></button
+                                        >
+                                      </ul>
+                                    </td>
+                                  </tr>
+                                {/if}
+                              {/each}
+                            </tbody>
+                          </table>
+                          <div class="text-center mt-3 mt-sm-3">
+                            <button
+                              class="btn btn-primary"
+                              on:click={cambiarVistaInsertarRecord}
+                              >Insertar nuevo record</button
+                            >
+                          </div>
+                        {:else if listaRecordUsuario[0] == null && pagina == 0 && admin == 0}
+                          <div class="text-center mt-3 mt-sm-3">
+                            <span class="candidate-list-time order-1"
+                              >Usted no ha jugado en ningun formato</span
+                            >
+                            <br /><br />
+                          </div>
                         {/if}
                       </div>
                     </div>
@@ -521,10 +593,14 @@
                   <button
                     id="botonDerrota"
                     type="submit"
-                    class="btn btn-primary">Derrota</button
+                    class="btn btn-primary"
+                    on:click={handle}>Derrota</button
                   >
-                  <button id="botonEmpate" type="submit" class="btn btn-primary"
-                    >Empate</button
+                  <button
+                    id="botonEmpate"
+                    type="submit"
+                    class="btn btn-primary"
+                    on:click={handle}>Empate</button
                   >
                 </form>
               </div>

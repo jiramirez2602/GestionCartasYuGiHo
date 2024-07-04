@@ -1,3 +1,4 @@
+import { addDoc, collection, updateDoc, doc, deleteDoc } from "firebase/firestore";
 export const ListaFormato = class{
 
     constructor(){
@@ -12,7 +13,12 @@ export const ListaFormato = class{
 
     setFormatos(formatos){
 
-        this.formatos = formatos;
+        this.formatos = [];
+
+        for(let i = 0; i < formatos.length; i++){
+
+            this.formatos[i] = formatos[i].fecha;
+        }
     }
 
     insertarFormato(formato){
@@ -20,7 +26,7 @@ export const ListaFormato = class{
         this.formatos.push(formato);
     }
 
-    buscarformatos(formatos, fecha) {
+    buscarFormatos(formatos, fecha) {
         for (let i = 0; i < formatos.length; i++) {
             if (formatos[i].fecha == fecha) {
             return i;
@@ -30,9 +36,15 @@ export const ListaFormato = class{
         return -1;
     }
 
-    listaVacia(){
+    cambiarMPorY(input) {
+        input = input.slice(5, input.length) + "-" + input.slice(0, 4);
+    
+        return input;
+    }
 
-        if(this.formatos[0] == null) return 0;
-        return 1;
+    async eliminarFormato(db, id){
+
+        await deleteDoc(doc(db, "formatos", id));
+        
     }
 }
