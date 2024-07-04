@@ -33,17 +33,28 @@
   let ListaPrestamo = new ListaPrestamos();
 
   function handle(e) {
-    let a = e.target.parentNode.children[0].id;
-    let b = e.target.parentNode.children[1].id;
-    let c = e.target.parentNode.children[2].id;
 
-    const btna = document.getElementById(a);
-    const btnb = document.getElementById(b);
-    const btnc = document.getElementById(c);
 
-    btna.disabled = true;
-    btnb.disabled = true;
-    btnc.disabled = true;
+
+    if(e.target.id.slice(0,4) === "btna" && e.target.id.slice(0,4) === "btnb"){
+      let a = e.target.parentNode.children[0].id;
+      let b = e.target.parentNode.children[1].id;
+
+      const btna = document.getElementById(a);
+      const btnb = document.getElementById(b);
+
+      btna.disabled = true;
+      btnb.disabled = true;
+    }
+    else if(e.target){
+
+      let c = e.target.parentNode.children[0].id;
+
+
+      const btnc = document.getElementById(c);
+
+      btnc.disabled = true;
+    }
   }
 
   const onsub = onSnapshot(
@@ -452,6 +463,32 @@
             >
               <thead>
                 <tr>
+<<<<<<< HEAD
+                  <td>{e.carta}</td>
+                  <td>{e.cantidad}</td>
+                  <td>{e.fecha}</td>
+                  {#if e.estado == 0}
+                    <td>En espera</td>
+                  {:else if e.estado == 1}
+                    <td>Aceptado</td>
+                  {:else}
+                    <td>Rechazado</td>
+                  {/if}
+                  <td>{e.usuario}</td>
+                  <td>
+                    <button
+                      id={"btna" + num}
+                      on:click={handle}
+                      on:click={ListaPrestamo.cambiarEstadoPrestamo(
+                        loans,
+                        cartas,
+                        1,
+                        num,
+                        db,
+                        e.cantidad
+                      )}
+                      >Aceptar</button
+=======
                   <th>Nombre de la carta</th>
                   <th>Cantidad a prestamo</th>
                   <th>Fecha de la solicitud</th>
@@ -501,6 +538,7 @@
                           )}>Rechazar</button
                         >
                       </td></tr
+>>>>>>> 0982aa1196b7bd85bb780db6e6e9e21681be85b3
                     >
                   </tbody>
                 {/if}
