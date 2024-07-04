@@ -599,23 +599,43 @@
               </tr>
             </thead>
             {#each ListaPrestamo.listaPres as e}
-              <tbody>
-                <tr>
-                  <td>{e.carta}</td>
-                  <td>{e.cantidad}</td>
-                  <td>{e.fecha}</td>
-                  {#if e.estado == 0}
-                    <td>En espera</td>
-                  {:else if e.estado == 1}
-                    <td>Aceptado</td>
-                  {:else if e.estado == 2}
-                    <td>Rechazado</td>
-                  {:else}
-                    <td>Finalizado</td>
-                  {/if}
-                  <td>{e.usuario}</td>
-                </tr>
-              </tbody>
+              {#if e.usuario == $usuario}
+                <tbody>
+                  <tr>
+                    <td>{e.carta}</td>
+                    <td>{e.cantidad}</td>
+                    <td>{e.fecha}</td>
+                    {#if e.estado == 0}
+                      <td>En espera</td>
+                    {:else if e.estado == 1}
+                      <td>Aceptado</td>
+                    {:else if e.estado == 2}
+                      <td>Rechazado</td>
+                    {:else}
+                      <td>Finalizado</td>
+                    {/if}
+                    <td>{e.usuario}</td>
+                  </tr>
+                </tbody>
+              {:else if $admin == 1}
+                <tbody>
+                  <tr>
+                    <td>{e.carta}</td>
+                    <td>{e.cantidad}</td>
+                    <td>{e.fecha}</td>
+                    {#if e.estado == 0}
+                      <td>En espera</td>
+                    {:else if e.estado == 1}
+                      <td>Aceptado</td>
+                    {:else if e.estado == 2}
+                      <td>Rechazado</td>
+                    {:else}
+                      <td>Finalizado</td>
+                    {/if}
+                    <td>{e.usuario}</td>
+                  </tr>
+                </tbody>
+              {/if}
             {/each}
           </table>
         {/if}
@@ -639,16 +659,30 @@
               </tr>
             </thead>
             {#each ListaPrestamo.listaPres as e}
-              {#if e.estado == 1}
-                <tbody>
-                  <tr>
-                    <td>{e.carta}</td>
-                    <td>{e.cantidad}</td>
-                    <td>{e.fecha}</td>
-                    <td>Aceptado</td>
-                    <td>{e.usuario}</td>
-                  </tr>
-                </tbody>
+              {#if e.usuario == $usuario}
+                {#if e.estado == 1}
+                  <tbody>
+                    <tr>
+                      <td>{e.carta}</td>
+                      <td>{e.cantidad}</td>
+                      <td>{e.fecha}</td>
+                      <td>Aceptado</td>
+                      <td>{e.usuario}</td>
+                    </tr>
+                  </tbody>
+                {/if}
+              {:else if $admin == 1}
+                {#if e.estado == 1}
+                  <tbody>
+                    <tr>
+                      <td>{e.carta}</td>
+                      <td>{e.cantidad}</td>
+                      <td>{e.fecha}</td>
+                      <td>Aceptado</td>
+                      <td>{e.usuario}</td>
+                    </tr>
+                  </tbody>
+                {/if}
               {/if}
             {/each}
           </table>
@@ -673,16 +707,30 @@
               </tr>
             </thead>
             {#each ListaPrestamo.listaPres as e}
-              {#if e.estado == 2 && vista == 2}
-                <tbody>
-                  <tr>
-                    <td>{e.carta}</td>
-                    <td>{e.cantidad}</td>
-                    <td>{e.fecha}</td>
-                    <td>Rechazado</td>
-                    <td>{e.usuario}</td>
-                  </tr>
-                </tbody>
+              {#if e.usuario == $usuario}
+                {#if e.estado == 2 && vista == 2}
+                  <tbody>
+                    <tr>
+                      <td>{e.carta}</td>
+                      <td>{e.cantidad}</td>
+                      <td>{e.fecha}</td>
+                      <td>Rechazado</td>
+                      <td>{e.usuario}</td>
+                    </tr>
+                  </tbody>
+                {/if}
+              {:else if $admin == 1}
+                {#if e.estado == 2 && vista == 2}
+                  <tbody>
+                    <tr>
+                      <td>{e.carta}</td>
+                      <td>{e.cantidad}</td>
+                      <td>{e.fecha}</td>
+                      <td>Rechazado</td>
+                      <td>{e.usuario}</td>
+                    </tr>
+                  </tbody>
+                {/if}
               {/if}
             {/each}
           </table>
@@ -707,16 +755,30 @@
               </tr>
             </thead>
             {#each ListaPrestamo.listaPres as e}
-              {#if e.estado == 0}
-                <tbody>
-                  <tr>
-                    <td>{e.carta}</td>
-                    <td>{e.cantidad}</td>
-                    <td>{e.fecha}</td>
-                    <td>En Espera</td>
-                    <td>{e.usuario}</td>
-                  </tr>
-                </tbody>
+              {#if e.usuario == $usuario}
+                {#if e.estado == 0}
+                  <tbody>
+                    <tr>
+                      <td>{e.carta}</td>
+                      <td>{e.cantidad}</td>
+                      <td>{e.fecha}</td>
+                      <td>En Espera</td>
+                      <td>{e.usuario}</td>
+                    </tr>
+                  </tbody>
+                {/if}
+              {:else if $admin == 1}
+                {#if e.estado == 0}
+                  <tbody>
+                    <tr>
+                      <td>{e.carta}</td>
+                      <td>{e.cantidad}</td>
+                      <td>{e.fecha}</td>
+                      <td>En Espera</td>
+                      <td>{e.usuario}</td>
+                    </tr>
+                  </tbody>
+                {/if}
               {/if}
             {/each}
           </table>
@@ -757,8 +819,10 @@
                     <td>En espera</td>
                   {:else if e.estado == 1}
                     <td>Aceptado</td>
-                  {:else}
+                  {:else if e.estado == 2}
                     <td>Rechazado</td>
+                  {:else}
+                    <td>Finalizado</td>
                   {/if}
                   <td>{e.usuario}</td>
                 </tr>
