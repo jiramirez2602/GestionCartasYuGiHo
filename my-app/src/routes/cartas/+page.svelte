@@ -1,19 +1,29 @@
 <script>
+
   let menu = "Cartas";
-  let cartas = [];
+  let cartas = []; /** cambiar nombres */
   async function LoadCards() {
     const response = await fetch(
       "https://db.ygoprodeck.com/api/v7/cardinfo.php",
     );
     const data = await response.json();
     cartas = data.data;
-    console.log(data);
+   
   }
   LoadCards();
 
+  
+  import {Carta} from "./../../lib/clases/Carta.js";
+  import {Biblioteca} from "./../../lib/clases/Biblioteca.js";
   import Notiflix from "notiflix";
-  import { addDoc, collection, onSnapshot } from "firebase/firestore";
+  import { addDoc,
+    collection,
+    onSnapshot,
+    deleteDoc,
+    doc,
+    updateDoc, } from "firebase/firestore";
   import { db } from "../firebase";
+ 
   let editStatus = false;
 
   let cartones = [];
@@ -21,7 +31,7 @@
     collection(db, "cartaBiblioteca"),
     (querySnapshot) => {
       cartones = querySnapshot.docs.map((doc) => {
-        return { ...doc.data() };
+        return { ...doc.data(), id: doc.id };
       });
       console.log(cartones);
     },
@@ -30,75 +40,113 @@
     },
   );
 
-  let cartasBiblioteca = [
-    {
-      nombre: "Ash Blossom",
-      tipo: "Monstruo",
-      cantidad: 3,
-    },
-    {
-      nombre: "Clock Wyvern",
-      tipo: "Monstruo",
-      cantidad: 5,
-    },
-  ];
 
-  let cartaBiblioteca = [
-    {
-      nombre: "",
-      tipo: "",
-      prestadas: 0,
-      cantidad: 0,
-    },
-  ];
+ let cartasBiblioteca = [];
+ let newBiblioteca= new Biblioteca();
+  let cartcantToUpdate="";
 
-  const createcartaBiblioteca = () => {
-    const newcartaBiblioteca = {
-      nombre: cartasBiblioteca.nombre,
-      tipo: cartasBiblioteca.tipo,
-      cantidad: cartasBiblioteca.cantidad,
-      prestadas: 0,
-    };
+  let cartaBiblioteca = new Carta();
 
-    cartaBiblioteca = newcartaBiblioteca;
 
-    limpiarFormulario();
-    Notiflix.Notify.success("Carta ingresada exitosamente!");
+  const createcartaBiblioteca  = async () => {
+    try {
+      
+      newBiblioteca.agregarCarta(cartaBiblioteca.nombre,cartaBiblioteca.tipo,cartaBiblioteca.cantidad,cartaBiblioteca.prestadas);
+      limpiarFormulario();
+      Notiflix.Notify.success("Carta insertada con exito!");
+    } catch (e) {
+      Notiflix.Notify.failure("Usuario no pudo ser creado");
+    }
   };
-  let foundElement;
-  let tipo_carta;
+/*
+ 
+  
+*/
+
+
+  const updateCarta = () => {
+    try {
+      // if (usernameToUpdate != updatedUser.username) {
+      //   if (
+      //     users.find((usuario) => usuario.username === updatedUser.username)
+      //   ) {
+      //     throw new Error("Username ya existe");
+      //   }
+      // }
+   
+     
+      newBiblioteca.actualizarCarta(cartaBiblioteca .id,cartaBiblioteca .nombre,cartaBiblioteca .tipo,cartaBiblioteca .cantidad,);
+      Notiflix.Notify.info("Carta modificado con exito!");
+      let cajatexto=document.getElementById('nombre_carta');
+      cajatexto.disabled=false;
+      cartones = [];
+    } catch (error) {
+      Notiflix.Notify.failure("Carta no pudo ser modificado: " + error);
+    }
+  };
+
+ const updateDataToUpdateCarta = (cartaEdited) => {
+    
+  let cajatexto=document.getElementById('nombre_carta');
+      cajatexto.disabled=true;
+    cartaBiblioteca= cartaEdited;
+    editStatus = true;
+    cartcantToUpdate = cartaEdited.cantidad;
+  };
+
+  //Funcion para eliminar usuario
+  const deleteCarta = async (car,id) => {
+    try {
+      
+      
+    
+
+      if(car.prestadas == 0){
+      newBiblioteca.eliminarCarta(id);
+      
+      Notiflix.Notify.success("Carta eliminada con exito!");}
+      else {
+
+        Notiflix.Notify.failure("Error , no puede eliminar una carta mientras este prestada"); 
+      }
+    } catch (error) {
+      Notiflix.Notify.failure("La Carta no pudo ser eliminada" + error);
+    }
+  };
 
   const onSubmitHadler = async () => {
     if (!editStatus) {
-      if (laCartaExisteAPI(cartasBiblioteca.nombre)) {
-        cartasBiblioteca.tipo = tipoExiste(cartasBiblioteca.nombre);
-        cartasBiblioteca.cantidad = cantidadCorrecta(cartaBiblioteca.cantidad);
-        if (laCartaExiste(cartasBiblioteca.nombre)) {
+      if (laCartaExisteAPI(cartaBiblioteca.nombre)) {
+        cartaBiblioteca.tipo = tipoExiste(cartaBiblioteca.nombre);
+        cartaBiblioteca.cantidad = cantidadCorrecta(cartaBiblioteca.cantidad);
+        if (laCartaExiste(cartaBiblioteca.nombre)) {
           Notiflix.Notify.failure("la carta ya existe dentro de la biblioteca");
         } else {
-          if (cantidadCorrecta(cartasBiblioteca.nombre)) {
+          if (cantidadCorrecta(cartaBiblioteca.nombre)) {
             createcartaBiblioteca();
-            await addDoc(collection(db, "cartaBiblioteca"), cartaBiblioteca);
+            
+       
           }
         }
       } else {
-        if (!laCartaExisteAPI(cartasBiblioteca.nombre)) {
+        if (!laCartaExisteAPI(cartaBiblioteca.nombre)) {
           Notiflix.Notify.failure("la carta no existe");
         }
       }
     } else {
-      console.log("h");
-      updateUser();
+      
+      updateCarta();
     }
     limpiarFormulario();
     editStatus = false;
   };
 
   const limpiarFormulario = () => {
-    cartasBiblioteca = {
+    cartaBiblioteca = {
       nombre: "",
       tipo: "",
       cantidad: 0,
+      prestadas:0
     };
   };
 
@@ -124,8 +172,8 @@
   }
 
   function cantidadCorrecta() {
-    if (cartasBiblioteca.cantidad > 0 && cartasBiblioteca.cantidad < 27) {
-      return cartasBiblioteca.cantidad;
+    if (cartaBiblioteca.cantidad > 0 && cartaBiblioteca.cantidad < 27) {
+      return cartaBiblioteca.cantidad;
     } else {
       Notiflix.Notify.failure("ha ingresado demasiadas cartas!");
       return false;
@@ -133,6 +181,9 @@
 
     return false;
   }
+
+
+  
 </script>
 
 <body id="page-top">
@@ -148,7 +199,7 @@
         <div class="sidebar-brand-icon mt-4">
           <img
             src="https://firebasestorage.googleapis.com/v0/b/omegaproxy-4abfe.appspot.com/o/isotipo.png?alt=media&token=55b51f65-c906-4427-ba2b-39bfea66ada9"
-            alt="Descripción de la imagen"
+            alt="DescripciÃ³n de la imagen"
             style="width: 120px;"
           />
         </div>
@@ -307,8 +358,8 @@
                   <input
                     type="text"
                     placeholder="Nombre de la carta"
-                    id="username"
-                    bind:value={cartasBiblioteca.nombre}
+                    id='nombre_carta'
+                    bind:value={cartaBiblioteca.nombre}
                     class="form-control"
                   />
                 </div>
@@ -322,7 +373,7 @@
                     type="text"
                     placeholder="Cantidad"
                     id="password"
-                    bind:value={cartasBiblioteca.cantidad}
+                    bind:value={cartaBiblioteca.cantidad}
                     class="form-control"
                   />
                 </div>
@@ -383,6 +434,19 @@
                   <td>{e.tipo}</td>
                   <td>{e.cantidad}</td>
                   <td>{e.prestadas}</td>
+                  
+                  <button
+                            on:click={() => deleteCarta(e,e.id)}
+                            class="btn btn-danger"
+                          >
+                            Eliminar
+                          </button>
+                          <button
+                            on:click={() => updateDataToUpdateCarta(e)}
+                            class="btn btn-secondary" 
+                          >
+                            Modificar
+                          </button>
                 </tr>
               </tbody>
             {/each}
