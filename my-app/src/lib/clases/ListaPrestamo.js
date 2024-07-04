@@ -1,4 +1,5 @@
 import { Prestamo } from "./../../lib/clases/Prestamo.js";
+import Notiflix from "notiflix";
 import {
   addDoc,
   collection,
