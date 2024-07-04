@@ -56,11 +56,6 @@
     let record = new Record();
 
     listaR = querySnapshot.docs.map((doc) => {
-      /*record.setUsuario(doc.data().usuario);
-      record.setFormato(doc.data().formato);
-      record.setGanadas(doc.data().ganadas);
-      record.setPerdidas(doc.data().perdidas);
-      record.setEmpatadas(doc.data().empatadas);*/
 
       return { ...doc.data(), id: doc.id };
     });
