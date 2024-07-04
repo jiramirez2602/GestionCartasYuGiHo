@@ -6,6 +6,7 @@
   import { Record } from "./../../lib/clases/Record.js";
   import { db } from "../firebase";
   import { addDoc, collection, onSnapshot } from "firebase/firestore";
+  import { onDestroy } from "svelte";
 
   let pagina = 0;
   let indice = 0;
@@ -31,6 +32,67 @@
       backOverlayColor: "rgba(242,91,44,0.2)",
     },
   });
+
+  const onsub1 = onSnapshot(collection(db, "formatos"), (querySnapshot) => {
+    listaF = querySnapshot.docs.map((doc) => {
+      return { ...doc.data(), id: doc.id };
+    });
+    listaF.sort(function (a, b) {
+      if (a.fecha > b.fecha) {
+        return -1;
+      }
+      if (a.fecha < b.fecha) {
+        return 1;
+      }
+      return 0;
+    });
+    formatos.setFormatos(listaF);
+    cambiarFormato(formatos.formatos[0]);
+  });
+
+  onDestroy(onsub1);
+
+  const onsub2 = onSnapshot(collection(db, "records"), (querySnapshot) => {
+    let record = new Record();
+
+    listaR = querySnapshot.docs.map((doc) => {
+      /*record.setUsuario(doc.data().usuario);
+      record.setFormato(doc.data().formato);
+      record.setGanadas(doc.data().ganadas);
+      record.setPerdidas(doc.data().perdidas);
+      record.setEmpatadas(doc.data().empatadas);*/
+
+      return { ...doc.data(), id: doc.id };
+    });
+
+    listaRecord.setRecords(listaR);
+    listaRecordUsuario = listaRecord.getRecordsUsuario(
+      listaRecord.records,
+      $usuario,
+    );
+
+    listaRecord.records.sort(function (a, b) {
+      if (a.formato > b.formato) {
+        return -1;
+      }
+      if (a.formato < b.formato) {
+        return 1;
+      }
+      return 0;
+    });
+
+    listaRecordUsuario.sort(function (a, b) {
+      if (a.formato > b.formato) {
+        return -1;
+      }
+      if (a.formato < b.formato) {
+        return 1;
+      }
+      return 0;
+    });
+  });
+
+  onDestroy(onsub2);
 
   function fechaActual() {
     let fecha = new Date().getFullYear().toString() + "-";
@@ -91,17 +153,32 @@
         );
       } else if (indice >= 0) {
         if (target.id == "botonVictoria")
-          listaRecord.agregarVictoria(indice, db, listaR[indice].id);
+          listaRecord.agregarPunto(
+            indice,
+            db,
+            listaRecord.buscarID($formatoActual, $usuario, listaR),
+            1,
+          );
         else if (target.id == "botonDerrota")
-          listaRecord.agregarDerrota(indice, db, listaR[indice].id);
+          listaRecord.agregarPunto(
+            indice,
+            db,
+            listaRecord.buscarID($formatoActual, $usuario, listaR),
+            2,
+          );
         else if (target.id == "botonEmpate")
-          listaRecord.agregarEmpate(indice, db, listaR[indice].id);
+          listaRecord.agregarPunto(
+            indice,
+            db,
+            listaRecord.buscarID($formatoActual, $usuario, listaR),
+            3,
+          );
       }
     }
   }
 
   const nuevoFormato = async () => {
-    let numero = formatos.buscarformatos(formatos.formatos, fecha);
+    let numero = formatos.buscarFormatos(formatos.formatos, fecha);
     if (numero < 0) {
       formato.fecha = fecha;
       await addDoc(collection(db, "formatos"), formato);
@@ -116,50 +193,6 @@
       Notiflix.Notify.failure("El formato que intenta insertar ya existe");
     }
   };
-
-  onSnapshot(collection(db, "formatos"), (querySnapshot) => {
-    listaF = querySnapshot.docs.map((doc) => {
-      return { ...doc.data(), id: doc.id };
-    });
-    listaF.sort(function (a, b) {
-      if (a.fecha > b.fecha) {
-        return -1;
-      }
-      if (a.fecha < b.fecha) {
-        return 1;
-      }
-      return 0;
-    });
-    formatos.setFormatos(listaF);
-    cambiarFormato(formatos.formatos[0]);
-  });
-
-  onSnapshot(collection(db, "records"), (querySnapshot) => {
-    let record = new Record();
-
-    listaR = querySnapshot.docs.map((doc) => {
-      record.setUsuario(doc.data().usuario);
-      record.setFormato(doc.data().formato);
-      record.setGanadas(doc.data().ganadas);
-      record.setPerdidas(doc.data().perdidas);
-      record.setEmpatadas(doc.data().empatadas);
-
-      return { record: record, id: doc.id };
-    });
-
-    listaR.sort(function (a, b) {
-      if (a.record.formato > b.record.formato) {
-        return -1;
-      }
-      if (a.record.formato < b.record.formato) {
-        return 1;
-      }
-      return 0;
-    });
-
-    listaRecord.setRecords(listaR);
-    listaRecordUsuario = listaRecord.getRecordsUsuario($usuario);
-  });
 
   function cambiarFormato(x) {
     formatoActual.set(x);
@@ -184,9 +217,6 @@
       "Ok",
     );
   }
-
-
-
 </script>
 
 <body id="page-top">
@@ -330,6 +360,7 @@
                   href="/"
                   data-toggle="modal"
                   data-target="#logoutModal"
+                  data-sveltekit-reload
                 >
                   <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"
                   ></i>
@@ -380,7 +411,9 @@
                                           <div class="candidate-list-title">
                                             <span
                                               class="candidate-list-time order-1"
-                                              >{formatos.cambiarMPorY(e.fecha)}</span
+                                              >{formatos.cambiarMPorY(
+                                                e.fecha,
+                                              )}</span
                                             >
                                           </div>
                                         </div>
@@ -408,7 +441,11 @@
                                       <ul
                                         class="list-unstyled mb-0 d-flex justify-content-end"
                                       >
-                                        <button on:click={formatos.eliminarFormato(db, listaF[num].id)}
+                                        <button
+                                          on:click={formatos.eliminarFormato(
+                                            db,
+                                            listaF[num].id,
+                                          )}
                                           ><li>
                                             <i
                                               class="text-danger"
@@ -444,7 +481,7 @@
                             <br /><br />
                           </div>
                         {/if}
-                        {#if listaR[0] && pagina == 0 && admin == 0}
+                        {#if listaRecordUsuario[0] != null && pagina == 0 && $admin == 0}
                           <table class="table manage-candidates-top mb-0">
                             <thead>
                               <tr>
@@ -505,18 +542,6 @@
                                             >
                                           </li></button
                                         >
-                                        <button
-                                          ><li>
-                                            <i
-                                              class="text-info"
-                                              data-toggle="tooltip"
-                                              title=""
-                                              data-original-title="Edit"
-                                              ><i class="fas fa-pencil-alt"
-                                              ></i></i
-                                            >
-                                          </li></button
-                                        >
                                       </ul>
                                     </td>
                                   </tr>
@@ -531,12 +556,19 @@
                               >Insertar nuevo record</button
                             >
                           </div>
-                        {:else if listaRecordUsuario[0] == null && pagina == 0 && admin == 0}
+                        {:else if listaRecordUsuario[0] == null && pagina == 0 && $admin == 0}
                           <div class="text-center mt-3 mt-sm-3">
                             <span class="candidate-list-time order-1"
                               >Usted no ha jugado en ningun formato</span
                             >
                             <br /><br />
+                          </div>
+                          <div class="text-center mt-3 mt-sm-3">
+                            <button
+                              class="btn btn-primary"
+                              on:click={cambiarVistaInsertarRecord}
+                              >Insertar nuevo record</button
+                            >
                           </div>
                         {/if}
                       </div>
