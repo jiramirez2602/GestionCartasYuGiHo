@@ -22,9 +22,11 @@ export const ListaPrestamos = class {
     this.listaPres.push(prestamo);
   }
 
-  cambiarEstadoPrestamo(loans, cartas, estado, num, db, prestadoa) {
+  cambiarEstadoPrestamo(loans, cartas, estado, num, db, prestadoa ) {
     let ID = loans[num].id;
-    let cartaID = loans[num].cartaID;
+    let cartaID = loans[num].cartaid;
+    console.log(loans[num].cartaID);
+    console.log(loans[num].id);
     if (estado === 1) {
       updateDoc(doc(db, "loans", ID), {
         estado: estado,

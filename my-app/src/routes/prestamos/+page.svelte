@@ -15,19 +15,16 @@
     doc,
     updateDoc,
     QuerySnapshot,
+    connectFirestoreEmulator,
   } from "firebase/firestore";
 
   let menu = "Prestamo de cartas";
   let cartas = [];
   let loans = [];
   let vista = 0;
+  let historia = 0;
   let nuevoPrestamo = new Prestamo();
   let ListaPrestamo = new ListaPrestamos();
-
-  /*Notiflix.Confirm.init({
-    okButtonBackground: "#F25B2C",
-    titleColor: "#F25B2C",
-  });*/
 
   function handle(e) {
     let a = e.target.parentNode.children[0].id;
@@ -62,7 +59,7 @@
       loans.forEach((loans) => {
         nuevoPrestamo = new Prestamo();
         nuevoPrestamo.setUsuario(loans.usuario);
-        nuevoPrestamo.setCarta(loans.nombrecarta);
+        nuevoPrestamo.setCarta(loans.carta);
         nuevoPrestamo.setEstado(loans.estado);
         nuevoPrestamo.setFecha(loans.fecha);
         nuevoPrestamo.setCantidad(loans.cantidad);
@@ -103,7 +100,7 @@
   }
 
   async function pedirPrestamo(ID) {
-    let cantidad =  await notifi();
+    let cantidad = await notifi();
     if (cantidad == -1) {
       return;
     } else {
@@ -122,13 +119,23 @@
         }
         nuevoPrestamo.setUsuario($usuario);
         nuevoPrestamo.setCarta(cartas.find((carta) => carta.id === ID).nombre);
+        console.log(cartas.find((carta) => carta.id === ID).nombre);
         nuevoPrestamo.setEstado(0);
         nuevoPrestamo.setFecha(new Date().toLocaleString());
         nuevoPrestamo.setCantidad(parseInt(cantidad));
-        await addDoc(collection(db, "loans"), nuevoPrestamo.getprestamo());
-        ListaPrestamo.insertarPrestamo(nuevoPrestamo);
+        let np = {
+          usuario: nuevoPrestamo.getprestamo().usuario,
+          carta: nuevoPrestamo.getprestamo().carta,
+          estado: nuevoPrestamo.getprestamo().estado,
+          fecha: nuevoPrestamo.getprestamo().fecha,
+          cantidad: nuevoPrestamo.getprestamo().cantidad,
+          cartaid: ID,
+        };
+        console.log(np);
+        await addDoc(collection(db, "loans"), np);
+        console.log(ListaPrestamo.listaPres);
         Notiflix.Notify.success("Solicitud de préstamo enviada");
-      } catch (e) {
+        } catch (e) {
         Notiflix.Notify.failure(
           "Solicitud de préstamo cancelada por " + e.message
         );
@@ -142,11 +149,24 @@
   function cambiarvista(x) {
     if (x == 0) {
       vista = 0;
-    } else {
+    } else if (x == 1) {
       vista = 1;
+    } else if (x == 2) {
+      vista = 2;
     }
   }
 
+  function historial(y) {
+    if (y == 0) {
+      historia = 0;
+    } else if (y == 1) {
+      historia = 1;
+    } else if (y == 2) {
+      historia = 2;
+    } else if (y == 3) {
+      historia = 3;
+    }
+  }
 </script>
 
 <body id="page-top">
@@ -313,11 +333,14 @@
           <button class="btn btn-primary" on:click={() => cambiarvista(0)}
             >Pedir Prestamo</button
           >
-          <button class="btn btn-primary" on:click={() => cambiarvista(1)}
-            >Administrar Prestamos</button
-          >
+          {#if $admin == 1}
+            <button class="btn btn-primary" on:click={() => cambiarvista(1)}
+              >Administrar Prestamos</button
+            >
+          {/if}
           <button class="btn btn-primary" on:click={() => cambiarvista(2)}
-            >Historial de prestamos</button>
+            >Historial de prestamos</button
+          >
         </div>
         <!-- /.container-fluid -->
         {#if vista == 0}
@@ -349,8 +372,7 @@
                   <td>
                     <button
                       class="btn btn-primary m-1 p-0"
-                      on:click={() => pedirPrestamo(carta.id)}
-                      >Pedir prestamo</button
+                      on:click={pedirPrestamo(carta.id)}>Pedir prestamo</button
                     >
                   </td>
                 </tr>
@@ -423,7 +445,162 @@
             {/each}
           </table>
         {/if}
-
+        {#if vista == 2}
+          <p></p>
+          <button class="btn btn-primary" on:click={() => historial(0)}
+            >Principal</button
+          >
+          <button class="btn btn-primary" on:click={() => historial(1)}
+            >Aprovados</button
+          >
+          <button class="btn btn-primary" on:click={() => historial(2)}
+            >Rechazados</button
+          >
+          <button class="btn btn-primary" on:click={() => historial(3)}
+            >Pendiente</button
+          >
+        {/if}
+        <p></p>
+        {#if historia == 0 && vista == 2}
+          <table
+            id="Table"
+            class="table table-striped"
+            style="width:100%"
+            data-toggle="table"
+            data-seach="true"
+            data-searchable="true"
+            data-pagination="true"
+          >
+            <thead>
+              <tr>
+                <th>Nombre de la carta</th>
+                <th>Cantidad a prestamo</th>
+                <th>Fecha de la solicitud</th>
+                <th>Estado</th>
+                <th>Usuario</th>
+              </tr>
+            </thead>
+            {#each ListaPrestamo.listaPres as e}
+              <tbody>
+                <tr>
+                  <td>{e.carta}</td>
+                  <td>{e.cantidad}</td>
+                  <td>{e.fecha}</td>
+                  {#if e.estado == 0}
+                    <td>En espera</td>
+                  {:else if e.estado == 1}
+                    <td>Aceptado</td>
+                  {:else}
+                    <td>Rechazado</td>
+                  {/if}
+                  <td>{e.usuario}</td>
+                </tr>
+              </tbody>
+            {/each}
+          </table>
+        {/if}
+        {#if historia == 1 && vista == 2}
+          <table
+            id="Table"
+            class="table table-striped"
+            style="width:100%"
+            data-toggle="table"
+            data-seach="true"
+            data-searchable="true"
+            data-pagination="true"
+          >
+            <thead>
+              <tr>
+                <th>Nombre de la carta</th>
+                <th>Cantidad a prestamo</th>
+                <th>Fecha de la solicitud</th>
+                <th>Estado</th>
+                <th>Usuario</th>
+              </tr>
+            </thead>
+            {#each ListaPrestamo.listaPres as e}
+              {#if e.estado == 1}
+                <tbody>
+                  <tr>
+                    <td>{e.carta}</td>
+                    <td>{e.cantidad}</td>
+                    <td>{e.fecha}</td>
+                    <td>Aceptado</td>
+                    <td>{e.usuario}</td>
+                  </tr>
+                </tbody>
+              {/if}
+            {/each}
+          </table>
+        {/if}
+        {#if historia == 2 && vista == 2}
+          <table
+            id="Table"
+            class="table table-striped"
+            style="width:100%"
+            data-toggle="table"
+            data-seach="true"
+            data-searchable="true"
+            data-pagination="true"
+          >
+            <thead>
+              <tr>
+                <th>Nombre de la carta</th>
+                <th>Cantidad a prestamo</th>
+                <th>Fecha de la solicitud</th>
+                <th>Estado</th>
+                <th>Usuario</th>
+              </tr>
+            </thead>
+            {#each ListaPrestamo.listaPres as e}
+              {#if e.estado == 2 && vista == 2}
+                <tbody>
+                  <tr>
+                    <td>{e.carta}</td>
+                    <td>{e.cantidad}</td>
+                    <td>{e.fecha}</td>
+                    <td>Rechazado</td>
+                    <td>{e.usuario}</td>
+                  </tr>
+                </tbody>
+              {/if}
+            {/each}
+          </table>
+        {/if}
+        {#if historia == 3 && vista == 2}
+          <table
+            id="Table"
+            class="table table-striped"
+            style="width:100%"
+            data-toggle="table"
+            data-seach="true"
+            data-searchable="true"
+            data-pagination="true"
+          >
+            <thead>
+              <tr>
+                <th>Nombre de la carta</th>
+                <th>Cantidad a prestamo</th>
+                <th>Fecha de la solicitud</th>
+                <th>Estado</th>
+                <th>Usuario</th>
+              </tr>
+            </thead>
+            {#each ListaPrestamo.listaPres as e}
+              {#if e.estado == 0}
+                <tbody>
+                  <tr>
+                    <td>{e.carta}</td>
+                    <td>{e.cantidad}</td>
+                    <td>{e.fecha}</td>
+                    <td>En Espera</td>
+                    <td>{e.usuario}</td>
+                  </tr>
+                </tbody>
+              {/if}
+            {/each}
+          </table>
+        {/if}
         <!-- End of Main Content -->
         <!-- End of Footer -->
       </div>

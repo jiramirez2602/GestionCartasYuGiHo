@@ -169,7 +169,7 @@
 
       <!-- Nav Item - Charts -->
       <li class="nav-item">
-        <a class="nav-link" href="/dame">
+        <a class="nav-link" href="/prestamos">
           <i class="fas fa-fw fa-chart-area"></i>
           <span style="font-size:larger;">Prestamos</span></a
         >
