@@ -102,7 +102,7 @@
       console.log(err);
     }
   );
-  
+
   onDestroy(onsub);
   onDestroy(onsub1);
   onDestroy(onsub2);
@@ -193,8 +193,6 @@
       }
     }
   }
-
-  
 
   function cambiarvista(x) {
     if (x == 0) {
@@ -382,7 +380,8 @@
         </nav>
         <!-- End of Topbar -->
         <!-- Begin Page Content -->
-        <div class="container-fluid">>
+        <div class="container-fluid">
+          >
           <!-- Page Heading -->
           <div
             class="d-sm-flex align-items-center justify-content-between mb-4"
@@ -441,33 +440,30 @@
         {/if}
         {#if vista == 1}
           <p></p>
-          <button class="btn btn-primary" on:click={() => administrarPrestamo(0)}
-            >Aceptar/Rechazar Prestamo</button>
-            <button class="btn btn-primary" on:click={() => administrarPrestamo(1)} on:click={generarListaFinalizacion}
-              >Finalizacion de prestamos</button>
-          {#if adminstrar == 0}    
-          <table
-            id="Table"
-            class="table table-striped"
-            style="width:100%"
-            data-toggle="table"
-            data-seach="true"
-            data-searchable="true"
-            data-pagination="true"
+          <button
+            class="btn btn-primary"
+            on:click={() => administrarPrestamo(0)}
+            >Aceptar/Rechazar Prestamo</button
           >
-            <thead>
-              <tr>
-                <th>Nombre de la carta</th>
-                <th>Cantidad a prestamo</th>
-                <th>Fecha de la solicitud</th>
-                <th>Estado</th>
-                <th>Usuario</th>
-                <th>Aceptar/Rechazar</th>
-              </tr>
-            </thead>
-            {#each ListaPrestamo.listaPres as e, num}
-              <tbody>
+          <button
+            class="btn btn-primary"
+            on:click={() => administrarPrestamo(1)}
+            on:click={generarListaFinalizacion}
+            >Finalizacion de prestamos</button
+          >
+          {#if adminstrar == 0}
+            <table
+              id="Table"
+              class="table table-striped"
+              style="width:100%"
+              data-toggle="table"
+              data-seach="true"
+              data-searchable="true"
+              data-pagination="true"
+            >
+              <thead>
                 <tr>
+<<<<<<< HEAD
                   <td>{e.carta}</td>
                   <td>{e.cantidad}</td>
                   <td>{e.fecha}</td>
@@ -492,24 +488,62 @@
                         e.cantidad
                       )}
                       >Aceptar</button
+=======
+                  <th>Nombre de la carta</th>
+                  <th>Cantidad a prestamo</th>
+                  <th>Fecha de la solicitud</th>
+                  <th>Estado</th>
+                  <th>Usuario</th>
+                  <th>Aceptar/Rechazar</th>
+                </tr>
+              </thead>
+              {#each ListaPrestamo.listaPres as e, num}
+                {#if e.estado == 0}
+                  <tbody>
+                    <tr>
+                      <td>{e.carta}</td>
+                      <td>{e.cantidad}</td>
+                      <td>{e.fecha}</td>
+                      {#if e.estado == 0}
+                        <td>En espera</td>
+                      {:else if e.estado == 1}
+                        <td>Aceptado</td>
+                      {:else}
+                        <td>Rechazado</td>
+                      {/if}
+                      <td>{e.usuario}</td>
+                      <td>
+                        <button
+                          id={"btna" + num}
+                          on:click={handle}
+                          on:click={ListaPrestamo.cambiarEstadoPrestamo(
+                            loans,
+                            cartas,
+                            1,
+                            num,
+                            db,
+                            e.cantidad
+                          )}>Aceptar</button
+                        >
+                        <button
+                          id={"btnb" + num}
+                          on:click={handle}
+                          on:click={ListaPrestamo.cambiarEstadoPrestamo(
+                            loans,
+                            cartas,
+                            2,
+                            num,
+                            db,
+                            e.cantidad
+                          )}>Rechazar</button
+                        >
+                      </td></tr
+>>>>>>> 0982aa1196b7bd85bb780db6e6e9e21681be85b3
                     >
-                    <button
-                      id={"btnb" + num}
-                      on:click={handle}
-                      on:click={ListaPrestamo.cambiarEstadoPrestamo(
-                        loans,
-                        cartas,
-                        2,
-                        num,
-                        db,
-                        e.cantidad
-                      )}>Rechazar</button
-                    >
-                  </td></tr
-                >
-              </tbody>
-            {/each}
-          </table>
+                  </tbody>
+                {/if}
+              {/each}
+            </table>
           {/if}
           {#if adminstrar == 1}
             <p></p>
@@ -522,44 +556,44 @@
               data-searchable="true"
               data-pagination="true"
             >
-            <thead>
-              <tr>
-                <th>Nombre de la carta</th>
-                <th>Cantidad a prestamo</th>
-                <th>Fecha de la solicitud</th>
-                <th>Estado</th>
-                <th>Usuario</th>
-                <th>Finalizar</th>
-              </tr>
-            </thead>
-            {#each finali as e, num}
-              <tbody>
+              <thead>
                 <tr>
-                  <td>{e.carta}</td>
-                  <td>{e.cantidad}</td>
-                  <td>{e.fecha}</td>
-                  <td>Aceptado</td>
-                  <td>{e.usuario}</td>
-                  <td>
-                    <button
-                      id={"btnc" + num}
-                      on:click={handle}
-                      on:click={ListaPrestamo.cambiarEstadoPrestamo(
-                        loans,
-                        cartas,
-                        3,
-                        num,
-                        db,
-                        e.cantidad,
-                        e.cartaid,
-                        e.id,
-                      )}>Finalizar</button
-                    >
-                  </td>
+                  <th>Nombre de la carta</th>
+                  <th>Cantidad a prestamo</th>
+                  <th>Fecha de la solicitud</th>
+                  <th>Estado</th>
+                  <th>Usuario</th>
+                  <th>Finalizar</th>
                 </tr>
-              </tbody>
-            {/each}
-          </table>
+              </thead>
+              {#each finali as e, num}
+                <tbody>
+                  <tr>
+                    <td>{e.carta}</td>
+                    <td>{e.cantidad}</td>
+                    <td>{e.fecha}</td>
+                    <td>Aceptado</td>
+                    <td>{e.usuario}</td>
+                    <td>
+                      <button
+                        id={"btnc" + num}
+                        on:click={handle}
+                        on:click={ListaPrestamo.cambiarEstadoPrestamo(
+                          loans,
+                          cartas,
+                          3,
+                          num,
+                          db,
+                          e.cantidad,
+                          e.cartaid,
+                          e.id
+                        )}>Finalizar</button
+                      >
+                    </td>
+                  </tr>
+                </tbody>
+              {/each}
+            </table>
           {/if}
         {/if}
         {#if vista == 2}
@@ -576,9 +610,11 @@
           <button class="btn btn-primary" on:click={() => historial(3)}
             >Pendiente</button
           >
-          <button class="btn btn-primary" on:click={() => historial(4)}
-            >Historial por Usuario</button
-          >
+          {#if $admin == 1}
+            <button class="btn btn-primary" on:click={() => historial(4)}
+              >Historial por Usuario</button
+            >
+          {/if}
         {/if}
         <p></p>
         {#if historia == 0 && vista == 2}
