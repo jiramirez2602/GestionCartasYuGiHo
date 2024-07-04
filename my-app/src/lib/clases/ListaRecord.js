@@ -1,3 +1,4 @@
+import Notiflix from "notiflix";
 import { addDoc, collection, updateDoc, doc } from "firebase/firestore";
 import { Record } from "./Record.js"
 export const ListaRecord = class {
@@ -17,14 +18,18 @@ export const ListaRecord = class {
         if (tipo == 1) {
             this.records[indice].ganadas = this.records[indice].ganadas + 1;
             await updateDoc(doc(db, "records", id), this.records[indice].getRecord());
+            Notiflix.Notify.success("Se ha actualizado el record");
+
         }
         else if (tipo == 2) {
             this.records[indice].perdidas += 1;
             await updateDoc(doc(db, "records", id), this.records[indice].getRecord());
+            Notiflix.Notify.success("Se ha actualizado el record");
         }
         else if (tipo == 3) {
             this.records[indice].empatadas += 1;
             await updateDoc(doc(db, "records", id), this.records[indice].getRecord());
+            Notiflix.Notify.success("Se ha actualizado el record");
         }
     }
 
