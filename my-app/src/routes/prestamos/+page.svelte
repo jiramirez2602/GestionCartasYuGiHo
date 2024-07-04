@@ -11,11 +11,13 @@
     addDoc,
     collection,
     onSnapshot,
+    where,
     deleteDoc,
     doc,
     updateDoc,
     QuerySnapshot,
     connectFirestoreEmulator,
+    query,
   } from "firebase/firestore";
 
   let menu = "Prestamo de cartas";
@@ -23,20 +25,25 @@
   let loans = [];
   let users = [];
   let userselec = [];
+  let finali = [];
   let vista = 0;
   let historia = 0;
+  let adminstrar = 0;
   let nuevoPrestamo = new Prestamo();
   let ListaPrestamo = new ListaPrestamos();
 
   function handle(e) {
     let a = e.target.parentNode.children[0].id;
     let b = e.target.parentNode.children[1].id;
+    let c = e.target.parentNode.children[2].id;
 
     const btna = document.getElementById(a);
     const btnb = document.getElementById(b);
+    const btnc = document.getElementById(c);
 
     btna.disabled = true;
     btnb.disabled = true;
+    btnc.disabled = true;
   }
 
   const onsub = onSnapshot(
@@ -45,19 +52,6 @@
       cartas = QuerySnapshot.docs.map((doc) => {
         return { ...doc.data(), id: doc.id };
       });
-    },
-    (err) => {
-      console.log(err);
-    }
-  );
-
-  const onsub2 = onSnapshot(
-    collection(db, "users"),
-    (querySnapshot) => {
-      users = querySnapshot.docs.map((docs) => {
-        return { ...docs.data(), id: docs.id };
-      });
-      console.log(users);
     },
     (err) => {
       console.log(err);
@@ -80,13 +74,37 @@
         nuevoPrestamo.setCantidad(loans.cantidad);
         ListaPrestamo.insertarPrestamo(nuevoPrestamo);
       });
-      console.log(ListaPrestamo);
-      console.log(loans);
     },
     (err) => {
       console.log(err);
     }
   );
+
+  const onsub2 = onSnapshot(
+    collection(db, "users"),
+    (querySnapshot) => {
+      users = querySnapshot.docs.map((docs) => {
+        return { ...docs.data(), id: docs.id };
+      });
+    },
+    (err) => {
+      console.log(err);
+    }
+  );
+  
+  onDestroy(onsub);
+  onDestroy(onsub1);
+  onDestroy(onsub2);
+
+  function generarListaFinalizacion() {
+    finali = [];
+    loans.forEach((e) => {
+      if (e.estado == 1) {
+        finali.push(e);
+      }
+    });
+    console.log(finali);
+  }
 
   function cambiarSeleccion(event) {
     let seleccionado = event.target.value;
@@ -95,7 +113,6 @@
       if (e.usuario == seleccionado) {
         userselec.push(e);
       }
-      console.log(userselec);
     });
   }
 
@@ -145,7 +162,6 @@
         }
         nuevoPrestamo.setUsuario($usuario);
         nuevoPrestamo.setCarta(cartas.find((carta) => carta.id === ID).nombre);
-        console.log(cartas.find((carta) => carta.id === ID).nombre);
         nuevoPrestamo.setEstado(0);
         nuevoPrestamo.setFecha(new Date().toLocaleString());
         nuevoPrestamo.setCantidad(parseInt(cantidad));
@@ -157,9 +173,7 @@
           cantidad: nuevoPrestamo.getprestamo().cantidad,
           cartaid: ID,
         };
-        console.log(np);
         await addDoc(collection(db, "loans"), np);
-        console.log(ListaPrestamo.listaPres);
         Notiflix.Notify.success("Solicitud de préstamo enviada");
       } catch (e) {
         Notiflix.Notify.failure(
@@ -169,9 +183,7 @@
     }
   }
 
-  onDestroy(onsub);
-  onDestroy(onsub1);
-  onDestroy(onsub2);
+  
 
   function cambiarvista(x) {
     if (x == 0) {
@@ -194,6 +206,14 @@
       historia = 3;
     } else if (y == 4) {
       historia = 4;
+    }
+  }
+
+  function administrarPrestamo(z) {
+    if (z == 0) {
+      adminstrar = 0;
+    } else if (z == 1) {
+      adminstrar = 1;
     }
   }
 </script>
@@ -241,7 +261,7 @@
 
       <!-- Nav Item - Charts -->
       <li class="nav-item">
-        <a class="nav-link" href="/dame">
+        <a class="nav-link" href="/prestamos">
           <i class="fas fa-fw fa-chart-area"></i>
           <span style="font-size:larger;">Prestamos</span></a
         >
@@ -350,9 +370,8 @@
           </ul>
         </nav>
         <!-- End of Topbar -->
-
         <!-- Begin Page Content -->
-        <div class="container-fluid">
+        <div class="container-fluid">>
           <!-- Page Heading -->
           <div
             class="d-sm-flex align-items-center justify-content-between mb-4"
@@ -364,7 +383,7 @@
           >
           {#if $admin == 1}
             <button class="btn btn-primary" on:click={() => cambiarvista(1)}
-              >Administrar Prestamos</button
+              >Administracion de prestamos</button
             >
           {/if}
           <button class="btn btn-primary" on:click={() => cambiarvista(2)}
@@ -410,6 +429,12 @@
           </table>
         {/if}
         {#if vista == 1}
+          <p></p>
+          <button class="btn btn-primary" on:click={() => administrarPrestamo(0)}
+            >Aceptar/Rechazar Prestamo</button>
+            <button class="btn btn-primary" on:click={() => administrarPrestamo(1)} on:click={generarListaFinalizacion}
+              >Finalizacion de prestamos</button>
+          {#if adminstrar == 0}    
           <table
             id="Table"
             class="table table-striped"
@@ -473,6 +498,57 @@
               </tbody>
             {/each}
           </table>
+          {/if}
+          {#if adminstrar == 1}
+            <p></p>
+            <table
+              id="Table"
+              class="table table-striped"
+              style="width:100%"
+              data-toggle="table"
+              data-seach="true"
+              data-searchable="true"
+              data-pagination="true"
+            >
+            <thead>
+              <tr>
+                <th>Nombre de la carta</th>
+                <th>Cantidad a prestamo</th>
+                <th>Fecha de la solicitud</th>
+                <th>Estado</th>
+                <th>Usuario</th>
+                <th>Finalizar</th>
+              </tr>
+            </thead>
+            {#each finali as e, num}
+              <tbody>
+                <tr>
+                  <td>{e.carta}</td>
+                  <td>{e.cantidad}</td>
+                  <td>{e.fecha}</td>
+                  <td>Aceptado</td>
+                  <td>{e.usuario}</td>
+                  <td>
+                    <button
+                      id={"btnc" + num}
+                      on:click={handle}
+                      on:click={ListaPrestamo.cambiarEstadoPrestamo(
+                        loans,
+                        cartas,
+                        3,
+                        num,
+                        db,
+                        e.cantidad,
+                        e.cartaid,
+                        e.id,
+                      )}>Finalizar</button
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            {/each}
+          </table>
+          {/if}
         {/if}
         {#if vista == 2}
           <p></p>
@@ -522,8 +598,10 @@
                     <td>En espera</td>
                   {:else if e.estado == 1}
                     <td>Aceptado</td>
-                  {:else}
+                  {:else if e.estado == 2}
                     <td>Rechazado</td>
+                  {:else}
+                    <td>Finalizado</td>
                   {/if}
                   <td>{e.usuario}</td>
                 </tr>

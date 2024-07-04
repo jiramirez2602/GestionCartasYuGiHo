@@ -22,18 +22,16 @@ export const ListaPrestamos = class {
     this.listaPres.push(prestamo);
   }
 
-  cambiarEstadoPrestamo(loans, cartas, estado, num, db, prestadoa ) {
+  cambiarEstadoPrestamo(loans, cartas, estado, num, db, prestadoa, idcam, id ) {
     let ID = loans[num].id;
     let cartaID = loans[num].cartaid;
-    console.log(loans[num].cartaID);
-    console.log(loans[num].id);
     if (estado === 1) {
       updateDoc(doc(db, "loans", ID), {
         estado: estado,
       });
-      let total =
-        parseInt(prestadoa) +
-        parseInt(cartas.find((carta) => carta.id === cartaID).prestadas);
+      let total = 
+      parseInt(cartas.find((carta) => carta.id === cartaID).prestadas) +
+        parseInt(prestadoa);   
       updateDoc(doc(db, "cartaBiblioteca", cartaID), {
         prestadas: total,
       });
@@ -41,6 +39,16 @@ export const ListaPrestamos = class {
     else if(estado === 2){
       updateDoc(doc(db, "loans", ID), {
         estado: estado,});
+    }
+    else if(estado === 3){
+      let total = parseInt(cartas.find((carta) => carta.id === idcam).prestadas) -
+        parseInt(prestadoa);      
+      updateDoc(doc(db, "loans", id), {
+        estado: estado,
+      });
+      updateDoc(doc(db, "cartaBiblioteca", idcam), {
+        prestadas: total,
+      });
     }
   }
 };
