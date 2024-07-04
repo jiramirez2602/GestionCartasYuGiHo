@@ -33,17 +33,28 @@
   let ListaPrestamo = new ListaPrestamos();
 
   function handle(e) {
-    let a = e.target.parentNode.children[0].id;
-    let b = e.target.parentNode.children[1].id;
-    let c = e.target.parentNode.children[2].id;
 
-    const btna = document.getElementById(a);
-    const btnb = document.getElementById(b);
-    const btnc = document.getElementById(c);
 
-    btna.disabled = true;
-    btnb.disabled = true;
-    btnc.disabled = true;
+
+    if(e.target.id.slice(0,4) === "btna" && e.target.id.slice(0,4) === "btnb"){
+      let a = e.target.parentNode.children[0].id;
+      let b = e.target.parentNode.children[1].id;
+
+      const btna = document.getElementById(a);
+      const btnb = document.getElementById(b);
+
+      btna.disabled = true;
+      btnb.disabled = true;
+    }
+    else if(e.target){
+
+      let c = e.target.parentNode.children[0].id;
+
+
+      const btnc = document.getElementById(c);
+
+      btnc.disabled = true;
+    }
   }
 
   const onsub = onSnapshot(
@@ -479,7 +490,8 @@
                         num,
                         db,
                         e.cantidad
-                      )}>Aceptar</button
+                      )}
+                      >Aceptar</button
                     >
                     <button
                       id={"btnb" + num}
