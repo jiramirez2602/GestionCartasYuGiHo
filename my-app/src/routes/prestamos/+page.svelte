@@ -181,6 +181,7 @@
           cantidad: nuevoPrestamo.getprestamo().cantidad,
           cartaid: ID,
         };
+        ListaPrestamo.insertarPrestamo(nuevoPrestamo);
         await addDoc(collection(db, "loans"), np);
         Notiflix.Notify.success("Solicitud de préstamo enviada");
       } catch (e) {
@@ -380,7 +381,7 @@
         <!-- End of Topbar -->
         <!-- Begin Page Content -->
         <div class="container-fluid">
-          >
+          
           <!-- Page Heading -->
           <div
             class="d-sm-flex align-items-center justify-content-between mb-4"
