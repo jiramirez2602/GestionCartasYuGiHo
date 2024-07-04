@@ -33,10 +33,10 @@
   let ListaPrestamo = new ListaPrestamos();
 
   function handle(e) {
-
-
-
-    if(e.target.id.slice(0,4) === "btna" && e.target.id.slice(0,4) === "btnb"){
+    if (
+      e.target.id.slice(0, 4) === "btna" &&
+      e.target.id.slice(0, 4) === "btnb"
+    ) {
       let a = e.target.parentNode.children[0].id;
       let b = e.target.parentNode.children[1].id;
 
@@ -45,11 +45,8 @@
 
       btna.disabled = true;
       btnb.disabled = true;
-    }
-    else if(e.target){
-
+    } else if (e.target) {
       let c = e.target.parentNode.children[0].id;
-
 
       const btnc = document.getElementById(c);
 
@@ -215,6 +212,8 @@
       historia = 3;
     } else if (y == 4) {
       historia = 4;
+    } else if (y == 5) {
+      historia = 5;
     }
   }
 
@@ -463,32 +462,6 @@
             >
               <thead>
                 <tr>
-<<<<<<< HEAD
-                  <td>{e.carta}</td>
-                  <td>{e.cantidad}</td>
-                  <td>{e.fecha}</td>
-                  {#if e.estado == 0}
-                    <td>En espera</td>
-                  {:else if e.estado == 1}
-                    <td>Aceptado</td>
-                  {:else}
-                    <td>Rechazado</td>
-                  {/if}
-                  <td>{e.usuario}</td>
-                  <td>
-                    <button
-                      id={"btna" + num}
-                      on:click={handle}
-                      on:click={ListaPrestamo.cambiarEstadoPrestamo(
-                        loans,
-                        cartas,
-                        1,
-                        num,
-                        db,
-                        e.cantidad
-                      )}
-                      >Aceptar</button
-=======
                   <th>Nombre de la carta</th>
                   <th>Cantidad a prestamo</th>
                   <th>Fecha de la solicitud</th>
@@ -538,7 +511,6 @@
                           )}>Rechazar</button
                         >
                       </td></tr
->>>>>>> 0982aa1196b7bd85bb780db6e6e9e21681be85b3
                     >
                   </tbody>
                 {/if}
@@ -602,13 +574,16 @@
             >Principal</button
           >
           <button class="btn btn-primary" on:click={() => historial(1)}
-            >Aprovados</button
+            >Aprobados</button
           >
           <button class="btn btn-primary" on:click={() => historial(2)}
             >Rechazados</button
           >
           <button class="btn btn-primary" on:click={() => historial(3)}
             >Pendiente</button
+          >
+          <button class="btn btn-primary" on:click={() => historial(5)}
+            >Finalizados</button
           >
           {#if $admin == 1}
             <button class="btn btn-primary" on:click={() => historial(4)}
@@ -813,6 +788,54 @@
                       <td>{e.cantidad}</td>
                       <td>{e.fecha}</td>
                       <td>En Espera</td>
+                      <td>{e.usuario}</td>
+                    </tr>
+                  </tbody>
+                {/if}
+              {/if}
+            {/each}
+          </table>
+        {/if}
+        {#if historia == 5 && vista == 2}
+          <table
+            id="Table"
+            class="table table-striped"
+            style="width:100%"
+            data-toggle="table"
+            data-seach="true"
+            data-searchable="true"
+            data-pagination="true"
+          >
+            <thead>
+              <tr>
+                <th>Nombre de la carta</th>
+                <th>Cantidad a prestamo</th>
+                <th>Fecha de la solicitud</th>
+                <th>Estado</th>
+                <th>Usuario</th>
+              </tr>
+            </thead>
+            {#each ListaPrestamo.listaPres as e}
+              {#if e.usuario == $usuario}
+                {#if e.estado == 3}
+                  <tbody>
+                    <tr>
+                      <td>{e.carta}</td>
+                      <td>{e.cantidad}</td>
+                      <td>{e.fecha}</td>
+                      <td>Finalizado</td>
+                      <td>{e.usuario}</td>
+                    </tr>
+                  </tbody>
+                {/if}
+              {:else if $admin == 1}
+                {#if e.estado == 3}
+                  <tbody>
+                    <tr>
+                      <td>{e.carta}</td>
+                      <td>{e.cantidad}</td>
+                      <td>{e.fecha}</td>
+                      <td>Finalizado</td>
                       <td>{e.usuario}</td>
                     </tr>
                   </tbody>
