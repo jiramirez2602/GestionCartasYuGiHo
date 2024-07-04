@@ -132,7 +132,6 @@
     });
     formatos.setFormatos(listaF);
     cambiarFormato(formatos.formatos[0]);
-    console.log(formatos.formatos,"pepe");
   });
 
   onSnapshot(collection(db, "records"), (querySnapshot) => {
@@ -160,7 +159,6 @@
 
     listaRecord.setRecords(listaR);
     listaRecordUsuario = listaRecord.getRecordsUsuario($usuario);
-    console.log(listaRecordUsuario);
   });
 
   function cambiarFormato(x) {
