@@ -35,10 +35,12 @@ export const ListaPrestamos = class {
       updateDoc(doc(db, "cartaBiblioteca", cartaID), {
         prestadas: total,
       });
+      Notiflix.Notify.success("Prestamo Aceptado!");
     }
     else if(estado === 2){
       updateDoc(doc(db, "loans", ID), {
         estado: estado,});
+        Notiflix.Notify.failure("Prestamo Rechazado!");
     }
     else if(estado === 3){
       let total = parseInt(cartas.find((carta) => carta.id === idcam).prestadas) -
@@ -49,6 +51,7 @@ export const ListaPrestamos = class {
       updateDoc(doc(db, "cartaBiblioteca", idcam), {
         prestadas: total,
       });
+      Notiflix.Notify.success("Prestamo Finalizado!");
     }
   }
 };
